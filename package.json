@@ -1,0 +1,21 @@
+{
+  "name": "com.arsenysamoilov.ecs-core",
+  "version": "0.0.0",
+  "displayName": "Semsam ECS Core",
+  "description": "Entity-Component-System Core",
+  "unity": "2021.3",
+  "unityRelease": "3f1",
+  "documentationUrl": "https://github.com/ArsenySamoilov/ecs-core/blob/main/README.md",
+  "licensesUrl": "https://github.com/ArsenySamoilov/ecs-core/blob/main/LICENSE.md",
+  "keywords": [
+    "Entity-Component-System",
+    "ECS",
+    "ECS-Core",
+    "Semsam ECS"
+  ],
+  "author": {
+    "name": "Arseny Samoilov",
+    "email": "samoilov.arseny@gmail.com",
+    "url": "https://github.com/ArsenySamoilov"
+  }
+}
