@@ -1,0 +1,14 @@
+{
+    "name": "arsenysamoilov.ecs-core",
+    "rootNamespace": "SemsamECS.Core",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
