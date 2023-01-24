@@ -5,24 +5,16 @@
     /// </summary>
     public sealed class Pool<TComponent> : IPool where TComponent : struct
     {
-        private readonly int[] _sparseIndices;
-        private readonly int[] _denseEntities;
         private readonly TComponent[] _denseComponents;
-        private readonly int _denseLastIndex;
-        private int _denseAmount;
+        private SparseSet _sparseSet;
 
         public event System.Action<int> OnEntityCreated;
         public event System.Action<int> OnEntityRemoved; 
 
         public Pool(int maxEntitiesAmount, int maxComponentsAmount)
         {
-            _sparseIndices = new int[maxEntitiesAmount];
-            _denseEntities = new int[maxComponentsAmount + 1];
             _denseComponents = new TComponent[maxComponentsAmount];
-            _denseLastIndex = maxComponentsAmount;
-            _denseAmount = 0;
-            System.Array.Fill(_sparseIndices, _denseLastIndex);
-            _denseEntities[_denseLastIndex] = _denseLastIndex;
+            _sparseSet = new SparseSet(maxEntitiesAmount, maxComponentsAmount);
         }
 
         /// <summary>
@@ -30,11 +22,10 @@
         /// </summary>
         public ref TComponent Create(int entity, TComponent component = default)
         {
-            _sparseIndices[entity] = _denseAmount;
-            _denseEntities[_denseAmount] = entity;
-            _denseComponents[_denseAmount] = component;
+            var index = _sparseSet.Add(entity);
+            _denseComponents[index] = component;
             OnEntityCreated?.Invoke(entity);
-            return ref _denseComponents[_denseAmount++];
+            return ref _denseComponents[index];
         }
         
         /// <summary>
@@ -42,11 +33,10 @@
         /// </summary>
         public ref TComponent Create(int entity, int entitySource)
         {
-            _sparseIndices[entity] = _denseAmount;
-            _denseEntities[_denseAmount] = entity;
-            _denseComponents[_denseAmount] = _denseComponents[entitySource];
+            var index = _sparseSet.Add(entity);
+            _denseComponents[index] = _denseComponents[entitySource];
             OnEntityCreated?.Invoke(entity);
-            return ref _denseComponents[_denseAmount++];
+            return ref _denseComponents[index];
         }
 
         /// <summary>
@@ -54,11 +44,8 @@
         /// </summary>
         public void Remove(int entity)
         {
-            var index = _sparseIndices[entity];
-            _sparseIndices[_denseEntities[--_denseAmount]] = index;
-            _sparseIndices[entity] = _denseLastIndex;
-            _denseEntities[index] = _denseEntities[_denseAmount];
-            _denseComponents[index] = _denseComponents[_denseAmount];
+            var (indexDestination, indexSource) = _sparseSet.Delete(entity);
+            _denseComponents[indexDestination] = _denseComponents[indexSource];
             OnEntityRemoved?.Invoke(entity);
         }
 
@@ -67,7 +54,7 @@
         /// </summary>
         public bool Have(int entity)
         {
-            return _sparseIndices[entity] != _denseLastIndex;
+            return _sparseSet.Have(entity);
         }
 
         /// <summary>
@@ -75,7 +62,7 @@
         /// </summary>
         public ref TComponent GetByEntity(int entity)
         {
-            return ref _denseComponents[_sparseIndices[entity]];
+            return ref _denseComponents[_sparseSet.Get(entity)];
         }
 
         /// <summary>
@@ -91,7 +78,7 @@
         /// </summary>
         public void Copy(int entitySource, int entityDestination)
         {
-            _denseComponents[_sparseIndices[entityDestination]] = _denseComponents[_sparseIndices[entitySource]];
+            _denseComponents[_sparseSet.Get(entityDestination)] = _denseComponents[_sparseSet.Get(entitySource)];
         }
 
         /// <summary>

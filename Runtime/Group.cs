@@ -10,10 +10,7 @@
         private IPool[] _poolsExclude;
         private int _amountInclude;
         private int _amountExclude;
-        private readonly int[] _sparseIndices;
-        private readonly int[] _denseEntities;
-        private readonly int _denseLastIndex;
-        private int _denseAmount;
+        private SparseSet _sparseSet;
 
         public Group(Pools pools, int maxEntitiesAmount, int maxGroupedAmount)
         {
@@ -22,12 +19,7 @@
             _poolsExclude = System.Array.Empty<IPool>();
             _amountInclude = 0;
             _amountExclude = 0;
-            _sparseIndices = new int[maxEntitiesAmount];
-            _denseEntities = new int[maxGroupedAmount + 1];
-            _denseLastIndex = maxGroupedAmount;
-            _denseAmount = 0;
-            System.Array.Fill(_sparseIndices, _denseLastIndex);
-            _denseEntities[_denseLastIndex] = _denseLastIndex;
+            _sparseSet = new SparseSet(maxEntitiesAmount, maxGroupedAmount);
         }
 
         /// <summary>
@@ -61,7 +53,7 @@
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
-            return new System.ReadOnlySpan<int>(_denseEntities, 0, _denseAmount);
+            return _sparseSet.GetEntities();
         }
 
         private void AttemptIncludeEntity(int entity)
@@ -72,18 +64,13 @@
             for (var i = 0; i < _amountExclude; ++i)
                 if (_poolsExclude[i].Have(entity))
                     return;
-            _sparseIndices[entity] = _denseAmount;
-            _denseEntities[_denseAmount++] = entity;
+            _sparseSet.Add(entity);
         }
 
         private void AttemptExcludeEntity(int entity)
         {
-            var index = _sparseIndices[entity];
-            if (index == _denseLastIndex)
-                return;
-            _sparseIndices[_denseEntities[--_denseAmount]] = index;
-            _sparseIndices[entity] = _denseLastIndex;
-            _denseEntities[index] = _denseEntities[_denseAmount];
+            if (_sparseSet.Have(entity))
+                _sparseSet.Delete(entity);
         }
     }
 }
