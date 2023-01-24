@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// Container for pools, can create and return pools.
+    /// A container for pools.
     /// </summary>
     public sealed class Pools
     {
@@ -21,7 +21,7 @@
         /// <summary>
         /// Creates a pool of type <typeparamref name="TComponent"/> and returns itself.
         /// </summary>
-        /// <param name="maxComponentsAmount">Components' capacity of the created pool</param>
+        /// <param name="maxComponentsAmount">Specified components' capacity of the created pool.</param>
         public Pools Add<TComponent>(int maxComponentsAmount = 0) where TComponent : struct
         {
             System.Array.Resize(ref _pools, _amount + 1);
@@ -33,7 +33,7 @@
         /// <summary>
         /// Returns the pool of type <typeparamref name="TComponent"/> and creates it if needed.
         /// </summary>
-        /// <param name="maxComponentsAmount">Components' capacity for the pool if it needs to be created</param>
+        /// <param name="maxComponentsAmount">Specified components' capacity for the pool if it needs to be created.</param>
         public Pool<TComponent> Get<TComponent>(int maxComponentsAmount = 0) where TComponent : struct
         {
             for (var i = 0; i < _amount; ++i)

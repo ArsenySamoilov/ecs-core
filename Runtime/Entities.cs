@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// Container for entities, can create and remove entities and check their existence.
+    /// A container for entities.
     /// </summary>
     public sealed class Entities
     {
@@ -40,7 +40,7 @@
         }
 
         /// <summary>
-        /// Boxes the entity for safe storing.
+        /// Boxes the entity for safe storage.
         /// </summary>
         public BoxedEntity Box(int entity)
         {

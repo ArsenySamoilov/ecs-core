@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// Container for components of type <typeparamref name="TComponent"/>
+    /// A container for components of type <typeparamref name="TComponent"/>.
     /// </summary>
     public sealed class Pool<TComponent> : IPool where TComponent : struct
     {
@@ -34,7 +34,7 @@
         }
         
         /// <summary>
-        /// Creates a component of type <typeparamref name="TComponent"/> for the entity by copying it from source entity.
+        /// Creates a copy of the source entity's component of type <typeparamref name="TComponent"/> for the entity.
         /// </summary>
         public ref TComponent Create(int entity, int entitySource)
         {
@@ -73,7 +73,7 @@
         }
 
         /// <summary>
-        /// Returns the component of type <typeparamref name="TComponent"/> by the index in the dense array.
+        /// Returns the component of type <typeparamref name="TComponent"/> by its index in the dense array.
         /// </summary>
         public ref TComponent GetById(int index)
         {
@@ -81,7 +81,7 @@
         }
 
         /// <summary>
-        /// Copies the component of type <typeparamref name="TComponent"/> from source entity to destination entity.
+        /// Copies the component of type <typeparamref name="TComponent"/> from the source entity to the destination entity.
         /// </summary>
         public void Copy(int entitySource, int entityDestination)
         {

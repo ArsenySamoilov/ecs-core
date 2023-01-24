@@ -1,5 +1,8 @@
 ﻿namespace SemsamECS.Core
 {
+    /// <summary>
+    /// A box for safe storage of an entity.
+    /// </summary>
     public readonly struct BoxedEntity
     {
         public readonly int Id;
