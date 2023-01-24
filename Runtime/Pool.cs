@@ -11,6 +11,9 @@
         private readonly int _denseLastIndex;
         private int _denseAmount;
 
+        public event System.Action<int> OnEntityCreated;
+        public event System.Action<int> OnEntityRemoved; 
+
         public Pool(int maxEntitiesAmount, int maxComponentsAmount)
         {
             _sparseIndices = new int[maxEntitiesAmount];
@@ -30,6 +33,7 @@
             _sparseIndices[entity] = _denseAmount;
             _denseEntities[_denseAmount] = entity;
             _denseComponents[_denseAmount] = component;
+            OnEntityCreated?.Invoke(entity);
             return ref _denseComponents[_denseAmount++];
         }
         
@@ -41,6 +45,7 @@
             _sparseIndices[entity] = _denseAmount;
             _denseEntities[_denseAmount] = entity;
             _denseComponents[_denseAmount] = _denseComponents[entitySource];
+            OnEntityCreated?.Invoke(entity);
             return ref _denseComponents[_denseAmount++];
         }
 
@@ -54,6 +59,7 @@
             _sparseIndices[entity] = _denseLastIndex;
             _denseEntities[index] = _denseEntities[_denseAmount];
             _denseComponents[index] = _denseComponents[_denseAmount];
+            OnEntityRemoved?.Invoke(entity);
         }
 
         /// <summary>
