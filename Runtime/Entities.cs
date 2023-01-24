@@ -42,20 +42,20 @@
         /// <summary>
         /// Boxes the entity for safe storage.
         /// </summary>
-        public BoxedEntity Box(int entity)
+        public EntityBoxed Box(int entity)
         {
-            return new BoxedEntity(entity, _entitiesGen[entity]);
+            return new EntityBoxed(entity, _entitiesGen[entity]);
         }
         
         /// <summary>
         /// Tries to unbox the boxed entity.
         /// </summary>
         /// <returns>True if unboxed successfully, false elsewhere.</returns>
-        public bool TryUnbox(BoxedEntity boxedEntity, out int entity)
+        public bool TryUnbox(EntityBoxed entityBoxed, out int entity)
         {
-            var boxedEntityId = boxedEntity.Id;
+            var boxedEntityId = entityBoxed.Id;
             entity = boxedEntityId;
-            return _entities[boxedEntityId] == boxedEntityId && _entitiesGen[boxedEntityId] == boxedEntity.Gen;
+            return _entities[boxedEntityId] == boxedEntityId && _entitiesGen[boxedEntityId] == entityBoxed.Gen;
         }
     }
 }
