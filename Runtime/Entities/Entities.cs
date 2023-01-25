@@ -14,8 +14,8 @@
             _listNextEntities = new int[numberMaxEntities];
             _generations = new int[numberMaxEntities];
             _currentNextEntity = 0;
-            for (var i = 1; i < numberMaxEntities; ++i)
-                _listNextEntities[i - 1] = i;
+            for (var i = 0; i < numberMaxEntities; ++i)
+                _listNextEntities[i] = i + 1;
         }
 
         /// <summary>
