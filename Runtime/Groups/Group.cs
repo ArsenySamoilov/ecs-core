@@ -47,6 +47,22 @@
             pool.OnEntityRemoved += AttemptIncludeEntity;
             return this;
         }
+
+        /// <summary>
+        /// Checks matching included and excluded types in the group.
+        /// </summary>
+        public bool Match(System.Type[] typesIncluded, int amountIncluded, System.Type[] typesExcluded, int amountExcluded)
+        {
+            if (amountIncluded != _amountInclude || amountExcluded != _amountExclude)
+                return false;
+            for (var i = 0; i < amountIncluded; ++i)
+                if (!Contains(_poolsInclude, _amountInclude, typesIncluded[i]))
+                    return false;
+            for (var i = 0; i < amountExcluded; ++i)
+                if (!Contains(_poolsExclude, _amountExclude, typesExcluded[i]))
+                    return false;
+            return true;
+        }
         
         /// <summary>
         /// Returns all the entities with the fitting set of components.
@@ -71,6 +87,14 @@
         {
             if (_sparseSet.Have(entity))
                 _sparseSet.Delete(entity);
+        }
+
+        private static bool Contains(IPool[] pools, int poolsAmount, System.Type type)
+        {
+            for (var i = 0; i < poolsAmount; ++i)
+                if (pools[i].GetComponentType() == type)
+                    return true;
+            return false;
         }
     }
 }
