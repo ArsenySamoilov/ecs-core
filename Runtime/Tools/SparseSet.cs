@@ -7,17 +7,16 @@
     {
         private readonly int[] _sparseIndices;
         private readonly int[] _denseEntities;
-        private readonly int _denseLastIndex;
+        private readonly int _sparseIndexNull;
         private int _denseAmount;
 
         public SparseSet(int maxSparseAmount, int maxDenseAmount)
         {
             _sparseIndices = new int[maxSparseAmount];
             _denseEntities = new int[maxDenseAmount];
-            _denseLastIndex = maxDenseAmount;
+            _sparseIndexNull = maxDenseAmount;
             _denseAmount = 0;
-            System.Array.Fill(_sparseIndices, _denseLastIndex);
-            _denseEntities[_denseLastIndex] = _denseLastIndex;
+            System.Array.Fill(_sparseIndices, _sparseIndexNull);
         }
         
         /// <summary>
@@ -38,7 +37,7 @@
         {
             var index = _sparseIndices[entity];
             _sparseIndices[_denseEntities[--_denseAmount]] = index;
-            _sparseIndices[entity] = _denseLastIndex;
+            _sparseIndices[entity] = _sparseIndexNull;
             _denseEntities[index] = _denseEntities[_denseAmount];
             return (index, _denseAmount);
         }
@@ -48,7 +47,7 @@
         /// </summary>
         public readonly bool Have(int entity)
         {
-            return _sparseIndices[entity] != _denseLastIndex;
+            return _sparseIndices[entity] != _sparseIndexNull;
         }
 
         /// <summary>
