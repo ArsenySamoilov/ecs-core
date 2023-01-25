@@ -34,7 +34,7 @@
         public ref TComponent Create(int entity, int sourceEntity)
         {
             var denseIndex = _sparseSet.Add(entity);
-            _denseComponents[denseIndex] = _denseComponents[sourceEntity];
+            _denseComponents[denseIndex] = _denseComponents[_sparseSet.Get(sourceEntity)];
             OnEntityCreated?.Invoke(entity);
             return ref _denseComponents[denseIndex];
         }
