@@ -82,7 +82,7 @@
         }
 
         /// <summary>
-        /// Returns the type of containing components.
+        /// Returns the type of the contained components.
         /// </summary>
         public System.Type GetComponentType()
         {

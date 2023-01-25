@@ -23,7 +23,7 @@
         }
 
         /// <summary>
-        /// Includes all entities from pool of type <typeparamref name="TComponent"/>.
+        /// Includes all the entities with a component of type <typeparamref name="TComponent"/>.
         /// </summary>
         public Group Include<TComponent>() where TComponent : struct
         {
@@ -36,7 +36,7 @@
         }
 
         /// <summary>
-        /// Excludes all entities from pool of type <typeparamref name="TComponent"/>.
+        /// Excludes all the entities without a component of type <typeparamref name="TComponent"/>.
         /// </summary>
         public Group Exclude<TComponent>() where TComponent : struct
         {
@@ -49,7 +49,7 @@
         }
 
         /// <summary>
-        /// Checks matching included and excluded types in the group.
+        /// Checks matching the group for included and excluded components' types.
         /// </summary>
         public bool Match(System.Type[] includedTypes, int includedTypeCount, System.Type[] excludedTypes, int excludedTypeCount)
         {

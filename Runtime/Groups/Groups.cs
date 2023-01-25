@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        /// Adds a group.
+        /// Adds the group.
         /// </summary>
         public Groups Add(Group group)
         {
@@ -41,7 +41,7 @@
         }
 
         /// <summary>
-        /// A builder for the group.
+        /// A builder for a group.
         /// </summary>
         public sealed class GroupBuilder
         {
@@ -63,7 +63,7 @@
             }
 
             /// <summary>
-            /// Includes all the entities from pool of type <typeparamref name="TComponent"/>.
+            /// Includes all the entities with a component of type <typeparamref name="TComponent"/>.
             /// </summary>
             public GroupBuilder Include<TComponent>() where TComponent : struct
             {
@@ -74,7 +74,7 @@
             }
 
             /// <summary>
-            /// Excludes all the entities from pool of type <typeparamref name="TComponent"/>.
+            /// Excludes all the entities without a component of type <typeparamref name="TComponent"/>.
             /// </summary>
             public GroupBuilder Exclude<TComponent>() where TComponent : struct
             {
@@ -85,7 +85,7 @@
             }
 
             /// <summary>
-            /// Returns either created group or already existing matching group.
+            /// Returns either the created group or the existing matching group.
             /// </summary>
             public Group TakeGroup()
             {
@@ -97,7 +97,7 @@
             }
             
             /// <summary>
-            /// Returns groups for continuing creating groups.
+            /// Returns the groups container.
             /// </summary>
             public Groups BackGroupContainer()
             {

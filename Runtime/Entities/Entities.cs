@@ -40,7 +40,7 @@
         }
 
         /// <summary>
-        /// Boxes the entity for safe storage.
+        /// Boxes the entity.
         /// </summary>
         public BoxedEntity Box(int entity)
         {

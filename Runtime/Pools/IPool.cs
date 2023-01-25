@@ -1,17 +1,17 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface for all pools.
+    /// An interface for pools.
     /// </summary>
     public interface IPool
     {
         /// <summary>
-        /// Checks existence of the pool's type component in the entity.
+        /// Checks existence of the component in the entity.
         /// </summary>
         bool Have(int entity);
 
         /// <summary>
-        /// Returns the type of containing components in the pool.
+        /// Returns the type of the contained components.
         /// </summary>
         System.Type GetComponentType();
     }

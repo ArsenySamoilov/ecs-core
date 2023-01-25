@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A sparse set for storage entities contiguously.
+    /// A sparse set for storing entities contiguously.
     /// </summary>
     public struct SparseSet
     {
@@ -20,7 +20,7 @@
         }
         
         /// <summary>
-        /// Adds an entity to the dense array and returns its dense array's index.
+        /// Adds the entity to the dense array and returns its dense array's index.
         /// </summary>
         public int Add(int entity)
         {
@@ -30,9 +30,9 @@
         }
 
         /// <summary>
-        /// Deletes the entity from the dense array and returns replacement indices.
+        /// Deletes the entity from the dense array and returns its replacement indices.
         /// </summary>
-        /// <returns>A pair (int1, int2) where int1 is the index for the dense array replacement by int2.</returns>
+        /// <returns>A pair (int1, int2) where int1 is the index of value for replacement by value at the int2 index in the dense array.</returns>
         public (int, int) Delete(int entity)
         {
             var index = _sparseIndices[entity];
