@@ -5,42 +5,42 @@
     /// </summary>
     public sealed class Pools
     {
-        private readonly int _maxEntitiesAmount;
-        private readonly int _maxComponentsAmount;
+        private readonly int _numberMaxEntities;
+        private readonly int _numberMaxComponents;
         private IPool[] _pools;
-        private int _amount;
+        private int _poolCount;
 
-        public Pools(int maxEntitiesAmount, int maxComponentsAmount)
+        public Pools(int numberMaxEntities, int numberMaxComponents)
         {
-            _maxEntitiesAmount = maxEntitiesAmount;
-            _maxComponentsAmount = maxComponentsAmount;
+            _numberMaxEntities = numberMaxEntities;
+            _numberMaxComponents = numberMaxComponents;
             _pools = System.Array.Empty<IPool>();
-            _amount = 0;
+            _poolCount = 0;
         }
 
         /// <summary>
         /// Creates a pool of type <typeparamref name="TComponent"/> and returns itself.
         /// </summary>
-        /// <param name="maxComponentsAmount">Specified components' capacity of the created pool.</param>
-        public Pools Add<TComponent>(int maxComponentsAmount = 0) where TComponent : struct
+        /// <param name="numberMaxComponents">Specified components' capacity of the created pool.</param>
+        public Pools Add<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
-            System.Array.Resize(ref _pools, _amount + 1);
-            maxComponentsAmount = maxComponentsAmount < 1 ? _maxComponentsAmount : maxComponentsAmount;
-            _pools[_amount++] = new Pool<TComponent>(_maxEntitiesAmount, maxComponentsAmount);
+            System.Array.Resize(ref _pools, _poolCount + 1);
+            numberMaxComponents = numberMaxComponents < 1 ? _numberMaxComponents : numberMaxComponents;
+            _pools[_poolCount++] = new Pool<TComponent>(_numberMaxEntities, numberMaxComponents);
             return this;
         }
     
         /// <summary>
         /// Returns the pool of type <typeparamref name="TComponent"/> and creates it if needed.
         /// </summary>
-        /// <param name="maxComponentsAmount">Specified components' capacity for the pool if it needs to be created.</param>
-        public Pool<TComponent> Get<TComponent>(int maxComponentsAmount = 0) where TComponent : struct
+        /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
+        public Pool<TComponent> Get<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
-            for (var i = 0; i < _amount; ++i)
+            for (var i = 0; i < _poolCount; ++i)
                 if (typeof(TComponent) == _pools[i].GetComponentType())
                     return (Pool<TComponent>)_pools[i];
-            Add<TComponent>(maxComponentsAmount);
-            return (Pool<TComponent>)_pools[_amount - 1];
+            Add<TComponent>(numberMaxComponents);
+            return (Pool<TComponent>)_pools[_poolCount - 1];
         }
     }
 }

@@ -8,14 +8,14 @@
         private readonly int[] _sparseIndices;
         private readonly int[] _denseEntities;
         private readonly int _sparseIndexNull;
-        private int _denseAmount;
+        private int _denseEntityCount;
 
-        public SparseSet(int maxSparseAmount, int maxDenseAmount)
+        public SparseSet(int sparseSize, int denseSize)
         {
-            _sparseIndices = new int[maxSparseAmount];
-            _denseEntities = new int[maxDenseAmount];
-            _sparseIndexNull = maxDenseAmount;
-            _denseAmount = 0;
+            _sparseIndices = new int[sparseSize];
+            _denseEntities = new int[denseSize];
+            _sparseIndexNull = denseSize;
+            _denseEntityCount = 0;
             System.Array.Fill(_sparseIndices, _sparseIndexNull);
         }
         
@@ -24,9 +24,9 @@
         /// </summary>
         public int Add(int entity)
         {
-            _sparseIndices[entity] = _denseAmount;
-            _denseEntities[_denseAmount] = entity;
-            return _denseAmount++;
+            _sparseIndices[entity] = _denseEntityCount;
+            _denseEntities[_denseEntityCount] = entity;
+            return _denseEntityCount++;
         }
 
         /// <summary>
@@ -36,10 +36,10 @@
         public (int, int) Delete(int entity)
         {
             var index = _sparseIndices[entity];
-            _sparseIndices[_denseEntities[--_denseAmount]] = index;
+            _sparseIndices[_denseEntities[--_denseEntityCount]] = index;
             _sparseIndices[entity] = _sparseIndexNull;
-            _denseEntities[index] = _denseEntities[_denseAmount];
-            return (index, _denseAmount);
+            _denseEntities[index] = _denseEntities[_denseEntityCount];
+            return (index, _denseEntityCount);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@
         /// </summary>
         public readonly System.ReadOnlySpan<int> GetEntities()
         {
-            return new System.ReadOnlySpan<int>(_denseEntities, 0, _denseAmount);
+            return new System.ReadOnlySpan<int>(_denseEntities, 0, _denseEntityCount);
         }
     }
 }

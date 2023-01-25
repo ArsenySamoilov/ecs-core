@@ -5,17 +5,17 @@
     /// </summary>
     public sealed class Entities
     {
-        private readonly int[] _entities;
-        private readonly int[] _entitiesGen;
-        private int _nextEntity;
+        private readonly int[] _listNextEntities;
+        private readonly int[] _generations;
+        private int _currentNextEntity;
 
-        public Entities(int maxEntitiesAmount)
+        public Entities(int numberMaxEntities)
         {
-            _entities = new int[maxEntitiesAmount];
-            _entitiesGen = new int[maxEntitiesAmount];
-            _nextEntity = 0;
-            for (var i = 1; i < maxEntitiesAmount; ++i)
-                _entities[i - 1] = i;
+            _listNextEntities = new int[numberMaxEntities];
+            _generations = new int[numberMaxEntities];
+            _currentNextEntity = 0;
+            for (var i = 1; i < numberMaxEntities; ++i)
+                _listNextEntities[i - 1] = i;
         }
 
         /// <summary>
@@ -23,9 +23,9 @@
         /// </summary>
         public int Create()
         {
-            var entity = _nextEntity;
-            _nextEntity = _entities[entity];
-            _entities[entity] = entity;
+            var entity = _currentNextEntity;
+            _currentNextEntity = _listNextEntities[entity];
+            _listNextEntities[entity] = entity;
             return entity;
         }
 
@@ -34,28 +34,28 @@
         /// </summary>
         public void Remove(int entity)
         {
-            _entities[entity] = _nextEntity;
-            _nextEntity = entity;
-            ++_entitiesGen[entity];
+            _listNextEntities[entity] = _currentNextEntity;
+            _currentNextEntity = entity;
+            ++_generations[entity];
         }
 
         /// <summary>
         /// Boxes the entity for safe storage.
         /// </summary>
-        public EntityBoxed Box(int entity)
+        public BoxedEntity Box(int entity)
         {
-            return new EntityBoxed(entity, _entitiesGen[entity]);
+            return new BoxedEntity(entity, _generations[entity]);
         }
         
         /// <summary>
         /// Tries to unbox the boxed entity.
         /// </summary>
         /// <returns>True if unboxed successfully, false elsewhere.</returns>
-        public bool TryUnbox(EntityBoxed entityBoxed, out int entity)
+        public bool TryUnbox(BoxedEntity boxedEntity, out int entity)
         {
-            var boxedEntityId = entityBoxed.Id;
+            var boxedEntityId = boxedEntity.Id;
             entity = boxedEntityId;
-            return _entities[boxedEntityId] == boxedEntityId && _entitiesGen[boxedEntityId] == entityBoxed.Gen;
+            return _listNextEntities[boxedEntityId] == boxedEntityId && _generations[boxedEntityId] == boxedEntity.Generation;
         }
     }
 }

@@ -11,32 +11,32 @@
         public event System.Action<int> OnEntityCreated;
         public event System.Action<int> OnEntityRemoved; 
 
-        public Pool(int maxEntitiesAmount, int maxComponentsAmount)
+        public Pool(int numberMaxEntities, int numberMaxComponents)
         {
-            _denseComponents = new TComponent[maxComponentsAmount];
-            _sparseSet = new SparseSet(maxEntitiesAmount, maxComponentsAmount);
+            _denseComponents = new TComponent[numberMaxComponents];
+            _sparseSet = new SparseSet(numberMaxEntities, numberMaxComponents);
         }
 
         /// <summary>
         /// Creates a component of type <typeparamref name="TComponent"/> for the entity.
         /// </summary>
-        public ref TComponent Create(int entity, TComponent component = default)
+        public ref TComponent Create(int entity, TComponent sourceComponent = default)
         {
-            var index = _sparseSet.Add(entity);
-            _denseComponents[index] = component;
+            var denseIndex = _sparseSet.Add(entity);
+            _denseComponents[denseIndex] = sourceComponent;
             OnEntityCreated?.Invoke(entity);
-            return ref _denseComponents[index];
+            return ref _denseComponents[denseIndex];
         }
         
         /// <summary>
         /// Creates a copy of the source entity's component of type <typeparamref name="TComponent"/> for the entity.
         /// </summary>
-        public ref TComponent Create(int entity, int entitySource)
+        public ref TComponent Create(int entity, int sourceEntity)
         {
-            var index = _sparseSet.Add(entity);
-            _denseComponents[index] = _denseComponents[entitySource];
+            var denseIndex = _sparseSet.Add(entity);
+            _denseComponents[denseIndex] = _denseComponents[sourceEntity];
             OnEntityCreated?.Invoke(entity);
-            return ref _denseComponents[index];
+            return ref _denseComponents[denseIndex];
         }
 
         /// <summary>
@@ -44,8 +44,8 @@
         /// </summary>
         public void Remove(int entity)
         {
-            var (indexDestination, indexSource) = _sparseSet.Delete(entity);
-            _denseComponents[indexDestination] = _denseComponents[indexSource];
+            var (destinationIndex, sourceIndex) = _sparseSet.Delete(entity);
+            _denseComponents[destinationIndex] = _denseComponents[sourceIndex];
             OnEntityRemoved?.Invoke(entity);
         }
 
@@ -68,7 +68,7 @@
         /// <summary>
         /// Returns the component of type <typeparamref name="TComponent"/> by its index in the dense array.
         /// </summary>
-        public ref TComponent GetById(int index)
+        public ref TComponent GetByIndex(int index)
         {
             return ref _denseComponents[index];
         }
@@ -76,9 +76,9 @@
         /// <summary>
         /// Copies the component of type <typeparamref name="TComponent"/> from the source entity to the destination entity.
         /// </summary>
-        public void Copy(int entitySource, int entityDestination)
+        public void Copy(int sourceEntity, int destinationEntity)
         {
-            _denseComponents[_sparseSet.Get(entityDestination)] = _denseComponents[_sparseSet.Get(entitySource)];
+            _denseComponents[_sparseSet.Get(destinationEntity)] = _denseComponents[_sparseSet.Get(sourceEntity)];
         }
 
         /// <summary>

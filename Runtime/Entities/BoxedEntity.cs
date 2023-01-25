@@ -3,15 +3,15 @@
     /// <summary>
     /// A box for safe storage of an entity.
     /// </summary>
-    public readonly struct EntityBoxed
+    public readonly struct BoxedEntity
     {
         public readonly int Id;
-        public readonly int Gen;
+        public readonly int Generation;
 
-        public EntityBoxed(int id, int gen)
+        public BoxedEntity(int id, int generation)
         {
             Id = id;
-            Gen = gen;
+            Generation = generation;
         }
     }
 }
