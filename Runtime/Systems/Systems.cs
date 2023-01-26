@@ -21,7 +21,7 @@
         /// <summary>
         /// Adds the system.
         /// </summary>
-        public Systems Add(object system)
+        public Systems Add(ISystem system)
         {
             if (system is IStartUpSystem startUpSystem)
                 AddStartUpSystem(startUpSystem);
