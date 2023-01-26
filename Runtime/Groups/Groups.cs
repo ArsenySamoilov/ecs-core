@@ -8,26 +8,14 @@
         private readonly int _numberMaxEntities;
         private readonly int _numberMaxGrouped;
         private readonly Pools _poolContainer;
-        private Group[] _groups;
-        private int _groupCount;
+        private BoxedGroup[] _boxedGroups;
 
         public Groups(Pools poolContainer, int numberMaxEntities, int numberMaxGrouped)
         {
             _numberMaxEntities = numberMaxEntities;
             _numberMaxGrouped = numberMaxGrouped;
             _poolContainer = poolContainer;
-            _groups = System.Array.Empty<Group>();
-            _groupCount = 0;
-        }
-
-        /// <summary>
-        /// Adds the group.
-        /// </summary>
-        public Groups Add(Group group)
-        {
-            System.Array.Resize(ref _groups, _groupCount + 1);
-            _groups[_groupCount++] = group;
-            return this;
+            _boxedGroups = System.Array.Empty<BoxedGroup>();
         }
         
         /// <summary>
@@ -37,77 +25,83 @@
         public GroupBuilder Create(int numberMaxGrouped = 0)
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _numberMaxGrouped : numberMaxGrouped;
-            return new GroupBuilder(this, _poolContainer, _numberMaxEntities, numberMaxGrouped);
+            return new BoxedGroup().GetBuilder(this, _poolContainer, _numberMaxEntities, numberMaxGrouped);
+        }
+
+        private void Add(BoxedGroup boxedGroup)
+        {
+            var boxedGroupCount = _boxedGroups.Length;
+            System.Array.Resize(ref _boxedGroups, boxedGroupCount + 1);
+            _boxedGroups[boxedGroupCount] = boxedGroup;
         }
 
         /// <summary>
-        /// A builder for a group.
+        /// A box for storage of a group.
         /// </summary>
-        public sealed class GroupBuilder
+        public sealed class BoxedGroup
         {
-            private readonly Groups _groupContainer;
-            private readonly Group _group;
             private System.Type[] _includedTypes;
             private System.Type[] _excludedTypes;
-            private int _includedTypeCount;
-            private int _excludedTypeCount;
+            private Group _group;
             
-            public GroupBuilder(Groups groupContainer, Pools poolContainer, int numberMaxEntities, int numberMaxGrouped)
+            public BoxedGroup()
             {
-                _groupContainer = groupContainer;
-                _group = new Group(poolContainer, numberMaxEntities, numberMaxGrouped);
                 _includedTypes = System.Array.Empty<System.Type>();
                 _excludedTypes = System.Array.Empty<System.Type>();
-                _includedTypeCount = 0;
-                _excludedTypeCount = 0;
+                _group = null;
             }
 
             /// <summary>
-            /// Includes all the entities with a component of type <typeparamref name="TComponent"/>.
+            /// Returns a group builder.
             /// </summary>
-            public GroupBuilder Include<TComponent>() where TComponent : struct
+            public GroupBuilder GetBuilder(Groups groupContainer, Pools poolContainer, int numberMaxEntities, int numberMaxGrouped)
             {
-                System.Array.Resize(ref _includedTypes, _includedTypeCount + 1);
-                _includedTypes[_includedTypeCount++] = typeof(TComponent);
-                _group.Include<TComponent>();
-                return this;
+                return new GroupBuilder(groupContainer, poolContainer, numberMaxEntities, numberMaxGrouped, this);
             }
 
             /// <summary>
-            /// Excludes all the entities without a component of type <typeparamref name="TComponent"/>.
+            /// Returns a group.
             /// </summary>
-            public GroupBuilder Exclude<TComponent>() where TComponent : struct
+            public Group GetGroup(Groups groupContainer, int numberMaxEntities, int numberMaxGrouped, IPool[] includedPools, IPool[] excludedPools)
             {
-                System.Array.Resize(ref _excludedTypes, _excludedTypeCount + 1);
-                _excludedTypes[_excludedTypeCount++] = typeof(TComponent);
-                _group.Exclude<TComponent>();
-                return this;
-            }
-
-            /// <summary>
-            /// Returns either the created group or the existing matching group.
-            /// </summary>
-            public Group TakeGroup()
-            {
-                for (var i = 0; i < _groupContainer._groupCount; ++i)
-                    if (_groupContainer._groups[i].Match(_includedTypes, _includedTypeCount, _excludedTypes, _excludedTypeCount))
-                        return _groupContainer._groups[i];
-                _group.Complete();
-                _groupContainer.Add(_group);
+                SetTypes(includedPools, excludedPools);
+                foreach (var boxedGroup in groupContainer._boxedGroups)
+                    if (boxedGroup.Match(_includedTypes, _excludedTypes))
+                        return boxedGroup._group;
+                _group = new Group(numberMaxEntities, numberMaxGrouped, includedPools, excludedPools);
+                groupContainer.Add(this);
                 return _group;
             }
             
-            /// <summary>
-            /// Returns the groups container.
-            /// </summary>
-            public Groups BackGroupContainer()
+            private void SetTypes(IPool[] includedPools, IPool[] excludedPools)
             {
-                for (var i = 0; i < _groupContainer._groupCount; ++i)
-                    if (_groupContainer._groups[i].Match(_includedTypes, _includedTypeCount, _excludedTypes, _excludedTypeCount))
-                        return _groupContainer;
-                _group.Complete();
-                _groupContainer.Add(_group);
-                return _groupContainer;
+                _includedTypes = new System.Type[includedPools.Length];
+                _excludedTypes = new System.Type[excludedPools.Length];
+                for (var i = includedPools.Length - 1; i > -1; --i)
+                    _includedTypes[i] = includedPools[i].GetComponentType();
+                for (var i = excludedPools.Length - 1; i > -1; --i)
+                    _includedTypes[i] = excludedPools[i].GetComponentType();
+            }
+
+            private bool Match(System.Type[] includedTypes, System.Type[] excludedTypes)
+            {
+                if (includedTypes.Length != _includedTypes.Length || excludedTypes.Length != _excludedTypes.Length)
+                    return false;
+                foreach (var type in includedTypes)
+                    if (!ContainType(_includedTypes, type))
+                        return false;
+                foreach (var type in excludedTypes)
+                    if (!ContainType(_excludedTypes, type))
+                        return false;
+                return true;
+            }
+
+            private static bool ContainType(System.Type[] types, System.Type targetType)
+            {
+                foreach (var type in types)
+                    if (type == targetType)
+                        return true;
+                return false;
             }
         }
     }

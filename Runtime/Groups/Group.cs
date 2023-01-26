@@ -5,70 +5,19 @@
     /// </summary>
     public sealed class Group
     {
-        private readonly Pools _poolContainer;
-        private IPool[] _includedPools;
-        private IPool[] _excludedPools;
-        private int _includedPoolCount;
-        private int _excludedPoolCount;
+        private readonly IPool[] _includedPools;
+        private readonly IPool[] _excludedPools;
         private SparseSet _sparseSet;
 
-        public Group(Pools poolContainer, int numberMaxEntities, int numberMaxGrouped)
+        public Group(int numberMaxEntities, int numberMaxGrouped, IPool[] includedPools, IPool[] excludedPools)
         {
-            _poolContainer = poolContainer;
-            _includedPools = System.Array.Empty<IPool>();
-            _excludedPools = System.Array.Empty<IPool>();
-            _includedPoolCount = 0;
-            _excludedPoolCount = 0;
+            _includedPools = includedPools;
+            _excludedPools = excludedPools;
             _sparseSet = new SparseSet(numberMaxEntities, numberMaxGrouped);
-        }
-
-        /// <summary>
-        /// Includes all the entities with a component of type <typeparamref name="TComponent"/>.
-        /// </summary>
-        public Group Include<TComponent>() where TComponent : struct
-        {
-            System.Array.Resize(ref _includedPools, _includedPoolCount + 1);
-            _includedPools[_includedPoolCount++] = _poolContainer.Get<TComponent>();
-            return this;
-        }
-
-        /// <summary>
-        /// Excludes all the entities without a component of type <typeparamref name="TComponent"/>.
-        /// </summary>
-        public Group Exclude<TComponent>() where TComponent : struct
-        {
-            System.Array.Resize(ref _excludedPools, _excludedPoolCount + 1);
-            _excludedPools[_excludedPoolCount++] = _poolContainer.Get<TComponent>();
-            return this;
-        }
-
-        /// <summary>
-        /// Completes the group's creation.
-        /// </summary>
-        public void Complete()
-        {
-            var entities = _includedPools[0].GetEntities();
-            for (int i = 0, entityCount = entities.Length; i < entityCount; ++i)
-                AttemptIncludeEntity(entities[i]);
+            FindMatchingEntities();
             SubscribePoolEvents();
         }
 
-        /// <summary>
-        /// Checks matching the group for included and excluded components' types.
-        /// </summary>
-        public bool Match(System.Type[] includedTypes, int includedTypeCount, System.Type[] excludedTypes, int excludedTypeCount)
-        {
-            if (includedTypeCount != _includedPoolCount || excludedTypeCount != _excludedPoolCount)
-                return false;
-            for (var i = 0; i < includedTypeCount; ++i)
-                if (!ContainPoolSpecifiedType(_includedPools, _includedPoolCount, includedTypes[i]))
-                    return false;
-            for (var i = 0; i < excludedTypeCount; ++i)
-                if (!ContainPoolSpecifiedType(_excludedPools, _excludedPoolCount, excludedTypes[i]))
-                    return false;
-            return true;
-        }
-        
         /// <summary>
         /// Returns all the entities with the fitting set of components.
         /// </summary>
@@ -76,28 +25,36 @@
         {
             return _sparseSet.GetEntities();
         }
-        
+
+        private void FindMatchingEntities()
+        {
+            var entities = _includedPools[0].GetEntities();
+            for (int i = 0, entityCount = entities.Length; i < entityCount; ++i)
+                AttemptIncludeEntity(entities[i]);
+        }
+
         private void SubscribePoolEvents()
         {
-            for (var i = 0; i < _includedPoolCount; ++i)
+            foreach (var pool in _includedPools)
             {
-                _includedPools[i].OnEntityCreated += AttemptIncludeEntity;
-                _includedPools[i].OnEntityRemoved += AttemptExcludeEntity;
+                pool.OnEntityCreated += AttemptIncludeEntity;
+                pool.OnEntityRemoved += AttemptExcludeEntity;
             }
-            for (var i = 0; i < _excludedPoolCount; ++i)
+
+            foreach (var pool in _excludedPools)
             {
-                _excludedPools[i].OnEntityCreated += AttemptExcludeEntity;
-                _excludedPools[i].OnEntityRemoved += AttemptIncludeEntity;
+                pool.OnEntityCreated += AttemptExcludeEntity;
+                pool.OnEntityRemoved += AttemptIncludeEntity;
             }
         }
 
         private void AttemptIncludeEntity(int entity)
         {
-            for (var i = 0; i < _includedPoolCount; ++i)
-                if (!_includedPools[i].Have(entity))
+            foreach (var pool in _includedPools)
+                if (!pool.Have(entity))
                     return;
-            for (var i = 0; i < _excludedPoolCount; ++i)
-                if (_excludedPools[i].Have(entity))
+            foreach (var pool in _excludedPools)
+                if (pool.Have(entity))
                     return;
             _sparseSet.Add(entity);
         }
@@ -106,14 +63,6 @@
         {
             if (_sparseSet.Have(entity))
                 _sparseSet.Delete(entity);
-        }
-
-        private static bool ContainPoolSpecifiedType(IPool[] pools, int poolCount, System.Type type)
-        {
-            for (var i = 0; i < poolCount; ++i)
-                if (pools[i].GetComponentType() == type)
-                    return true;
-            return false;
         }
     }
 }
