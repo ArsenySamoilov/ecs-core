@@ -28,10 +28,7 @@
         public Group Include<TComponent>() where TComponent : struct
         {
             System.Array.Resize(ref _includedPools, _includedPoolCount + 1);
-            var pool = _poolContainer.Get<TComponent>();
-            _includedPools[_includedPoolCount++] = pool;
-            pool.OnEntityCreated += AttemptIncludeEntity;
-            pool.OnEntityRemoved += AttemptExcludeEntity;
+            _includedPools[_includedPoolCount++] = _poolContainer.Get<TComponent>();
             return this;
         }
 
@@ -41,11 +38,26 @@
         public Group Exclude<TComponent>() where TComponent : struct
         {
             System.Array.Resize(ref _excludedPools, _excludedPoolCount + 1);
-            var pool = _poolContainer.Get<TComponent>();
-            _excludedPools[_excludedPoolCount++] = pool;
-            pool.OnEntityCreated += AttemptExcludeEntity;
-            pool.OnEntityRemoved += AttemptIncludeEntity;
+            _excludedPools[_excludedPoolCount++] = _poolContainer.Get<TComponent>();
             return this;
+        }
+
+        /// <summary>
+        /// Subscribes to the essential pool events.
+        /// </summary>
+        public void SubscribePoolEvents()
+        {
+            for (var i = 0; i < _includedPoolCount; ++i)
+            {
+                _includedPools[i].OnEntityCreated += AttemptIncludeEntity;
+                _includedPools[i].OnEntityRemoved += AttemptExcludeEntity;
+            }
+
+            for (var i = 0; i < _excludedPoolCount; ++i)
+            {
+                _excludedPools[i].OnEntityCreated += AttemptExcludeEntity;
+                _excludedPools[i].OnEntityRemoved += AttemptIncludeEntity;
+            }
         }
 
         /// <summary>

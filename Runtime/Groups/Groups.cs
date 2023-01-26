@@ -92,6 +92,7 @@
                 for (var i = 0; i < _groupContainer._groupCount; ++i)
                     if (_groupContainer._groups[i].Match(_includedTypes, _includedTypeCount, _excludedTypes, _excludedTypeCount))
                         return _groupContainer._groups[i];
+                _group.SubscribePoolEvents();
                 _groupContainer.Add(_group);
                 return _group;
             }
@@ -104,6 +105,7 @@
                 for (var i = 0; i < _groupContainer._groupCount; ++i)
                     if (_groupContainer._groups[i].Match(_includedTypes, _includedTypeCount, _excludedTypes, _excludedTypeCount))
                         return _groupContainer;
+                _group.SubscribePoolEvents();
                 _groupContainer.Add(_group);
                 return _groupContainer;
             }
