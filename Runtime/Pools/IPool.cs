@@ -20,6 +20,11 @@
         bool Have(int entity);
 
         /// <summary>
+        /// Returns all the entities from the pool.
+        /// </summary>
+        System.ReadOnlySpan<int> GetEntities();
+        
+        /// <summary>
         /// Returns the type of the contained components.
         /// </summary>
         System.Type GetComponentType();

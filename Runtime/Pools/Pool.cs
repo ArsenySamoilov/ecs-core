@@ -88,6 +88,14 @@
         }
 
         /// <summary>
+        /// Returns all the entities from the pool.
+        /// </summary>
+        public System.ReadOnlySpan<int> GetEntities()
+        {
+            return _sparseSet.GetEntities();
+        }
+
+        /// <summary>
         /// Returns the type of the contained components.
         /// </summary>
         public System.Type GetComponentType()

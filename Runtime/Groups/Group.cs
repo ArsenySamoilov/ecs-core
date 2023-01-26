@@ -43,21 +43,14 @@
         }
 
         /// <summary>
-        /// Subscribes to the essential pool events.
+        /// Completes the group's creation.
         /// </summary>
-        public void SubscribePoolEvents()
+        public void Complete()
         {
-            for (var i = 0; i < _includedPoolCount; ++i)
-            {
-                _includedPools[i].OnEntityCreated += AttemptIncludeEntity;
-                _includedPools[i].OnEntityRemoved += AttemptExcludeEntity;
-            }
-
-            for (var i = 0; i < _excludedPoolCount; ++i)
-            {
-                _excludedPools[i].OnEntityCreated += AttemptExcludeEntity;
-                _excludedPools[i].OnEntityRemoved += AttemptIncludeEntity;
-            }
+            var entities = _includedPools[0].GetEntities();
+            for (int i = 0, entityCount = entities.Length; i < entityCount; ++i)
+                AttemptIncludeEntity(entities[i]);
+            SubscribePoolEvents();
         }
 
         /// <summary>
@@ -82,6 +75,20 @@
         public System.ReadOnlySpan<int> GetEntities()
         {
             return _sparseSet.GetEntities();
+        }
+        
+        private void SubscribePoolEvents()
+        {
+            for (var i = 0; i < _includedPoolCount; ++i)
+            {
+                _includedPools[i].OnEntityCreated += AttemptIncludeEntity;
+                _includedPools[i].OnEntityRemoved += AttemptExcludeEntity;
+            }
+            for (var i = 0; i < _excludedPoolCount; ++i)
+            {
+                _excludedPools[i].OnEntityCreated += AttemptExcludeEntity;
+                _excludedPools[i].OnEntityRemoved += AttemptIncludeEntity;
+            }
         }
 
         private void AttemptIncludeEntity(int entity)
