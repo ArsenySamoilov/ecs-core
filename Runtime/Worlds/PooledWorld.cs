@@ -7,11 +7,11 @@
         public readonly Groups Groups;
         public readonly Systems Systems;
 
-        public PooledWorld(int numberMaxEntities, int numberMaxComponents, int numberMaxGrouped)
+        public PooledWorld(Config config)
         {
-            Entities = new Entities(numberMaxEntities);
-            Pools = new Pools(numberMaxEntities, numberMaxComponents);
-            Groups = new Groups(Pools, numberMaxEntities, numberMaxGrouped);
+            Entities = new Entities(config.ToEntities());
+            Pools = new Pools(config.ToPools());
+            Groups = new Groups(Pools, config.ToGroups());
             Systems = new Systems();
         }
     }

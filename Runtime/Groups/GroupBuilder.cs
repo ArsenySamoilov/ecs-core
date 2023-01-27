@@ -7,18 +7,16 @@
     {
         private readonly Groups _groupContainer;
         private readonly Pools _poolContainer;
-        private readonly int _numberMaxEntities;
-        private readonly int _numberMaxGrouped;
+        private readonly Config.Groups _configuration;
         private readonly Groups.BoxedGroup _boxedGroup;
         private IPool[] _includedPools;
         private IPool[] _excludedPools;
 
-        public GroupBuilder(Groups groupContainer, Pools poolContainer, int numberMaxEntities, int numberMaxGrouped, Groups.BoxedGroup boxedGroup)
+        public GroupBuilder(Groups groupContainer, Pools poolContainer, Config.Groups configuration, Groups.BoxedGroup boxedGroup)
         {
             _groupContainer = groupContainer;
             _poolContainer = poolContainer;
-            _numberMaxEntities = numberMaxEntities;
-            _numberMaxGrouped = numberMaxGrouped;
+            _configuration = configuration;
             _boxedGroup = boxedGroup;
             _includedPools = System.Array.Empty<IPool>();
             _excludedPools = System.Array.Empty<IPool>();
@@ -51,7 +49,7 @@
         /// </summary>
         public Group Complete()
         {
-            return _boxedGroup.GetGroup(_groupContainer, _numberMaxEntities, _numberMaxGrouped, _includedPools, _excludedPools);
+            return _boxedGroup.GetGroup(_groupContainer, _configuration, _includedPools, _excludedPools);
         }
     }
 }

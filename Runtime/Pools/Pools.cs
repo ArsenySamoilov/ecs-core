@@ -5,15 +5,13 @@
     /// </summary>
     public sealed class Pools
     {
-        private readonly int _numberMaxEntities;
-        private readonly int _numberMaxComponents;
+        private readonly Config.Pools _configuration;
         private IPool[] _pools;
         private int _poolCount;
 
-        public Pools(int numberMaxEntities, int numberMaxComponents)
+        public Pools(Config.Pools configuration)
         {
-            _numberMaxEntities = numberMaxEntities;
-            _numberMaxComponents = numberMaxComponents;
+            _configuration = configuration;
             _pools = System.Array.Empty<IPool>();
             _poolCount = 0;
         }
@@ -25,8 +23,9 @@
         public Pools Add<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
             System.Array.Resize(ref _pools, _poolCount + 1);
-            numberMaxComponents = numberMaxComponents < 1 ? _numberMaxComponents : numberMaxComponents;
-            _pools[_poolCount++] = new Pool<TComponent>(_numberMaxEntities, numberMaxComponents);
+            numberMaxComponents = numberMaxComponents < 1 ? _configuration.NumberMaxComponents : numberMaxComponents;
+            var configuration = new Config.Pools(_configuration.NumberMaxEntities, numberMaxComponents);
+            _pools[_poolCount++] = new Pool<TComponent>(configuration);
             return this;
         }
     

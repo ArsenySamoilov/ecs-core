@@ -9,12 +9,12 @@
         private readonly int[] _generations;
         private int _currentNextEntity;
 
-        public Entities(int numberMaxEntities)
+        public Entities(Config.Entities configuration)
         {
-            _listNextEntities = new int[numberMaxEntities];
-            _generations = new int[numberMaxEntities];
+            _listNextEntities = new int[configuration.NumberMaxEntities];
+            _generations = new int[configuration.NumberMaxEntities];
             _currentNextEntity = 0;
-            for (var i = 0; i < numberMaxEntities; ++i)
+            for (var i = 0; i < configuration.NumberMaxEntities; ++i)
                 _listNextEntities[i] = i + 1;
         }
 

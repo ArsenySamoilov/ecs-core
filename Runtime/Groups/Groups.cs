@@ -5,15 +5,13 @@
     /// </summary>
     public sealed class Groups
     {
-        private readonly int _numberMaxEntities;
-        private readonly int _numberMaxGrouped;
+        private readonly Config.Groups _configuration;
         private readonly Pools _poolContainer;
         private BoxedGroup[] _boxedGroups;
 
-        public Groups(Pools poolContainer, int numberMaxEntities, int numberMaxGrouped)
+        public Groups(Pools poolContainer, Config.Groups configuration)
         {
-            _numberMaxEntities = numberMaxEntities;
-            _numberMaxGrouped = numberMaxGrouped;
+            _configuration = configuration;
             _poolContainer = poolContainer;
             _boxedGroups = System.Array.Empty<BoxedGroup>();
         }
@@ -24,8 +22,9 @@
         /// <param name="numberMaxGrouped">Specified created group's capacity.</param>
         public GroupBuilder Create(int numberMaxGrouped = 0)
         {
-            numberMaxGrouped = numberMaxGrouped < 1 ? _numberMaxGrouped : numberMaxGrouped;
-            return new BoxedGroup().GetBuilder(this, _poolContainer, _numberMaxEntities, numberMaxGrouped);
+            numberMaxGrouped = numberMaxGrouped < 1 ? _configuration.NumberMaxGrouped : numberMaxGrouped;
+            var configuration =  new Config.Groups(_configuration.NumberMaxEntities, numberMaxGrouped);
+            return new BoxedGroup().GetBuilder(this, _poolContainer, configuration);
         }
 
         private void Add(BoxedGroup boxedGroup)
@@ -54,21 +53,21 @@
             /// <summary>
             /// Returns a group builder.
             /// </summary>
-            public GroupBuilder GetBuilder(Groups groupContainer, Pools poolContainer, int numberMaxEntities, int numberMaxGrouped)
+            public GroupBuilder GetBuilder(Groups groupContainer, Pools poolContainer, Config.Groups configuration)
             {
-                return new GroupBuilder(groupContainer, poolContainer, numberMaxEntities, numberMaxGrouped, this);
+                return new GroupBuilder(groupContainer, poolContainer, configuration, this);
             }
 
             /// <summary>
             /// Returns a group.
             /// </summary>
-            public Group GetGroup(Groups groupContainer, int numberMaxEntities, int numberMaxGrouped, IPool[] includedPools, IPool[] excludedPools)
+            public Group GetGroup(Groups groupContainer, Config.Groups configuration, IPool[] includedPools, IPool[] excludedPools)
             {
                 SetTypes(includedPools, excludedPools);
                 foreach (var boxedGroup in groupContainer._boxedGroups)
                     if (boxedGroup.Match(_includedTypes, _excludedTypes))
                         return boxedGroup._group;
-                _group = new Group(numberMaxEntities, numberMaxGrouped, includedPools, excludedPools);
+                _group = new Group(configuration, includedPools, excludedPools);
                 groupContainer.Add(this);
                 return _group;
             }
