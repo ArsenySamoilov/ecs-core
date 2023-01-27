@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A group of entities with fitting set of components.
+    /// A group of entities with matching set of components.
     /// </summary>
     public sealed class Group
     {
@@ -19,7 +19,7 @@
         }
 
         /// <summary>
-        /// Returns all the entities with the fitting set of components.
+        /// Returns all the entities with the matching set of components.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
