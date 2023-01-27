@@ -42,7 +42,7 @@
         {
             var excludedPoolCount = _excludedPools.Length;
             System.Array.Resize(ref _excludedPools, excludedPoolCount + 1);
-            _includedPools[excludedPoolCount] = _poolContainer.Get<TComponent>();
+            _excludedPools[excludedPoolCount] = _poolContainer.Get<TComponent>();
             return this;
         }
 

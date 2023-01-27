@@ -80,7 +80,7 @@
                 for (var i = includedPools.Length - 1; i > -1; --i)
                     _includedTypes[i] = includedPools[i].GetComponentType();
                 for (var i = excludedPools.Length - 1; i > -1; --i)
-                    _includedTypes[i] = excludedPools[i].GetComponentType();
+                    _excludedTypes[i] = excludedPools[i].GetComponentType();
             }
 
             private bool Match(System.Type[] includedTypes, System.Type[] excludedTypes)
