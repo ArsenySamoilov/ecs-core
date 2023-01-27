@@ -8,13 +8,7 @@
         private readonly TComponent[] _denseComponents;
         private SparseSet _sparseSet;
 
-        /// <summary>
-        /// An event that occurs when entity has been created in the pool.
-        /// </summary>
         public event System.Action<int> OnEntityCreated;
-        /// <summary>
-        /// An event that occurs when entity has been removed from the pool.
-        /// </summary>
         public event System.Action<int> OnEntityRemoved; 
 
         public Pool(Config.Pools configuration)

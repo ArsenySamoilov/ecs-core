@@ -1,5 +1,8 @@
 ﻿namespace SemsamECS.Core
 {
+    /// <summary>
+    /// A container for entities, pools, groups and systems.
+    /// </summary>
     public sealed class PooledWorld
     {
         public readonly Entities Entities;
