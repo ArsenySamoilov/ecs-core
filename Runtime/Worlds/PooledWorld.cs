@@ -5,10 +5,10 @@
     /// </summary>
     public sealed class PooledWorld
     {
-        public readonly Entities Entities;
-        public readonly Pools Pools;
-        public readonly Groups Groups;
-        public readonly Systems Systems;
+        public Entities Entities { get; }
+        public Pools Pools { get; }
+        public Groups Groups { get; }
+        public Systems Systems { get; }
 
         public PooledWorld(Config config)
         {

@@ -66,14 +66,6 @@
         }
 
         /// <summary>
-        /// Returns the component of type <typeparamref name="TComponent"/> by its index in the dense array.
-        /// </summary>
-        public ref TComponent GetByIndex(int index)
-        {
-            return ref _denseComponents[index];
-        }
-
-        /// <summary>
         /// Copies the component of type <typeparamref name="TComponent"/> from the source entity to the destination entity.
         /// </summary>
         public void Copy(int sourceEntity, int destinationEntity)

@@ -24,7 +24,7 @@
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _configuration.NumberMaxGrouped : numberMaxGrouped;
             var configuration =  new Config.Groups(_configuration.NumberMaxEntities, numberMaxGrouped);
-            return new BoxedGroup().GetBuilder(this, _poolContainer, configuration);
+            return new BoxedGroup().CreateBuilder(this, _poolContainer, configuration);
         }
 
         private void Add(BoxedGroup boxedGroup)
@@ -51,15 +51,15 @@
             }
 
             /// <summary>
-            /// Returns a group builder.
+            /// Creates a group builder.
             /// </summary>
-            public GroupBuilder GetBuilder(Groups groupContainer, Pools poolContainer, Config.Groups configuration)
+            public GroupBuilder CreateBuilder(Groups groupContainer, Pools poolContainer, Config.Groups configuration)
             {
                 return new GroupBuilder(groupContainer, poolContainer, configuration, this);
             }
 
             /// <summary>
-            /// Returns a group.
+            /// Returns the matching group and creates it if needed.
             /// </summary>
             public Group GetGroup(Groups groupContainer, Config.Groups configuration, IPool[] includedPools, IPool[] excludedPools)
             {

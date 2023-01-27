@@ -20,9 +20,9 @@
         /// </summary>
         public sealed class Options
         {
-            public int NumberMaxEntities = 10;
-            public int NumberMaxComponents = 10;
-            public int NumberMaxGrouped = 10;
+            public int NumberMaxEntities { get; set; } = 10;
+            public int NumberMaxComponents { get; set; } = 10;
+            public int NumberMaxGrouped { get; set; } = 10;
         }
     }
 }

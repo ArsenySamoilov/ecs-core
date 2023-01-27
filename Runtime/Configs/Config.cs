@@ -5,9 +5,9 @@
     /// </summary>
     public readonly struct Config
     {
-        public readonly int NumberMaxEntities;
-        public readonly int NumberMaxComponents;
-        public readonly int NumberMaxGrouped;
+        public int NumberMaxEntities { get; }
+        public int NumberMaxComponents { get; }
+        public int NumberMaxGrouped { get; }
 
         public Config(ConfigBuilder.Options options)
         {
@@ -45,7 +45,7 @@
         /// </summary>
         public readonly struct Entities
         {
-            public readonly int NumberMaxEntities;
+            public int NumberMaxEntities { get; }
 
             public Entities(int numberMaxEntities)
             {
@@ -58,8 +58,8 @@
         /// </summary>
         public readonly struct Pools
         {
-            public readonly int NumberMaxEntities;
-            public readonly int NumberMaxComponents;
+            public int NumberMaxEntities { get; }
+            public int NumberMaxComponents { get; }
 
             public Pools(int numberMaxEntities, int numberMaxComponents)
             {
@@ -73,8 +73,8 @@
         /// </summary>
         public readonly struct Groups
         {
-            public readonly int NumberMaxEntities;
-            public readonly int NumberMaxGrouped;
+            public int NumberMaxEntities { get; }
+            public int NumberMaxGrouped { get; }
 
             public Groups(int numberMaxEntities, int numberMaxGrouped)
             {
