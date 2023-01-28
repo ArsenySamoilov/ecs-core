@@ -5,13 +5,13 @@
     /// </summary>
     public sealed class Groups
     {
-        private readonly Config.Groups _configuration;
+        private readonly Config.Groups _config;
         private readonly Pools _poolContainer;
         private BoxedGroup[] _boxedGroups;
 
-        public Groups(Pools poolContainer, Config.Groups configuration)
+        public Groups(Pools poolContainer, Config.Groups config)
         {
-            _configuration = configuration;
+            _config = config;
             _poolContainer = poolContainer;
             _boxedGroups = System.Array.Empty<BoxedGroup>();
         }
@@ -22,9 +22,9 @@
         /// <param name="numberMaxGrouped">Specified created group's capacity.</param>
         public GroupBuilder Create(int numberMaxGrouped = 0)
         {
-            numberMaxGrouped = numberMaxGrouped < 1 ? _configuration.NumberMaxGrouped : numberMaxGrouped;
-            var configuration =  new Config.Groups(_configuration.NumberMaxEntities, numberMaxGrouped);
-            return new BoxedGroup().CreateBuilder(this, _poolContainer, configuration);
+            numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
+            var config =  new Config.Groups(_config.NumberMaxEntities, numberMaxGrouped);
+            return new BoxedGroup().CreateBuilder(this, _poolContainer, config);
         }
 
         private void Add(BoxedGroup boxedGroup)
@@ -53,21 +53,21 @@
             /// <summary>
             /// Creates a group builder.
             /// </summary>
-            public GroupBuilder CreateBuilder(Groups groupContainer, Pools poolContainer, Config.Groups configuration)
+            public GroupBuilder CreateBuilder(Groups groupContainer, Pools poolContainer, Config.Groups config)
             {
-                return new GroupBuilder(groupContainer, poolContainer, configuration, this);
+                return new GroupBuilder(groupContainer, poolContainer, config, this);
             }
 
             /// <summary>
             /// Returns the matching group and creates it if needed.
             /// </summary>
-            public Group GetGroup(Groups groupContainer, Config.Groups configuration, IPool[] includedPools, IPool[] excludedPools)
+            public Group GetGroup(Groups groupContainer, Config.Groups config, IPool[] includedPools, IPool[] excludedPools)
             {
                 SetTypes(includedPools, excludedPools);
                 foreach (var boxedGroup in groupContainer._boxedGroups)
                     if (boxedGroup.Match(_includedTypes, _excludedTypes))
                         return boxedGroup._group;
-                _group = new Group(configuration, includedPools, excludedPools);
+                _group = new Group(config, includedPools, excludedPools);
                 groupContainer.Add(this);
                 return _group;
             }

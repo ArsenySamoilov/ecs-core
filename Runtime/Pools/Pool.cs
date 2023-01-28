@@ -11,10 +11,10 @@
         public event System.Action<int> OnEntityCreated;
         public event System.Action<int> OnEntityRemoved; 
 
-        public Pool(Config.Pools configuration)
+        public Pool(Config.Pools config)
         {
-            _denseComponents = new TComponent[configuration.NumberMaxComponents];
-            _sparseSet = new SparseSet(configuration.NumberMaxEntities, configuration.NumberMaxComponents);
+            _denseComponents = new TComponent[config.NumberMaxComponents];
+            _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
         }
 
         /// <summary>

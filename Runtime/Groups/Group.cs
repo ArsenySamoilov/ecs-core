@@ -9,11 +9,11 @@
         private readonly IPool[] _excludedPools;
         private SparseSet _sparseSet;
 
-        public Group(Config.Groups configuration, IPool[] includedPools, IPool[] excludedPools)
+        public Group(Config.Groups config, IPool[] includedPools, IPool[] excludedPools)
         {
             _includedPools = includedPools;
             _excludedPools = excludedPools;
-            _sparseSet = new SparseSet(configuration.NumberMaxEntities, configuration.NumberMaxGrouped);
+            _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxGrouped);
             FindMatchingEntities();
             SubscribePoolEvents();
         }
