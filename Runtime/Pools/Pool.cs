@@ -60,17 +60,25 @@
         /// <summary>
         /// Returns the component of type <typeparamref name="TComponent"/> that belongs to the entity.
         /// </summary>
-        public ref TComponent GetByEntity(int entity)
+        public ref TComponent Get(int entity)
         {
             return ref _denseComponents[_sparseSet.Get(entity)];
         }
 
         /// <summary>
-        /// Copies the component of type <typeparamref name="TComponent"/> from the source entity to the destination entity.
+        /// Sets the value to the component of type <typeparamref name="TComponent"/> that belongs to the entity.
         /// </summary>
-        public void Copy(int sourceEntity, int destinationEntity)
+        public void Set(int entity, TComponent component)
         {
-            _denseComponents[_sparseSet.Get(destinationEntity)] = _denseComponents[_sparseSet.Get(sourceEntity)];
+            _denseComponents[_sparseSet.Get(entity)] = component;
+        }
+
+        /// <summary>
+        /// Copies the component of type <typeparamref name="TComponent"/> to entity from the source entity.
+        /// </summary>
+        public void Copy(int entity, int sourceEntity)
+        {
+            _denseComponents[_sparseSet.Get(entity)] = _denseComponents[_sparseSet.Get(sourceEntity)];
         }
 
         /// <summary>
