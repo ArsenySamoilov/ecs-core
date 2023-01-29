@@ -37,14 +37,14 @@
         {
             foreach (var pool in _includedPools)
             {
-                pool.OnEntityCreated += AttemptIncludeEntity;
-                pool.OnEntityRemoved += AttemptExcludeEntity;
+                pool.Created += AttemptIncludeEntity;
+                pool.Removed += AttemptExcludeEntity;
             }
 
             foreach (var pool in _excludedPools)
             {
-                pool.OnEntityCreated += AttemptExcludeEntity;
-                pool.OnEntityRemoved += AttemptIncludeEntity;
+                pool.Created += AttemptExcludeEntity;
+                pool.Removed += AttemptIncludeEntity;
             }
         }
 

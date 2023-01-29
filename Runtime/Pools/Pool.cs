@@ -8,8 +8,8 @@
         private readonly TComponent[] _denseComponents;
         private SparseSet _sparseSet;
 
-        public event System.Action<int> OnEntityCreated;
-        public event System.Action<int> OnEntityRemoved; 
+        public event System.Action<int> Created;
+        public event System.Action<int> Removed; 
 
         public Pool(Config.Pools config)
         {
@@ -24,7 +24,7 @@
         {
             var denseIndex = _sparseSet.Add(entity);
             _denseComponents[denseIndex] = sourceComponent;
-            OnEntityCreated?.Invoke(entity);
+            Created?.Invoke(entity);
             return ref _denseComponents[denseIndex];
         }
         
@@ -35,7 +35,7 @@
         {
             var denseIndex = _sparseSet.Add(entity);
             _denseComponents[denseIndex] = _denseComponents[_sparseSet.Get(sourceEntity)];
-            OnEntityCreated?.Invoke(entity);
+            Created?.Invoke(entity);
             return ref _denseComponents[denseIndex];
         }
 
@@ -46,7 +46,7 @@
         {
             var (destinationIndex, sourceIndex) = _sparseSet.Delete(entity);
             _denseComponents[destinationIndex] = _denseComponents[sourceIndex];
-            OnEntityRemoved?.Invoke(entity);
+            Removed?.Invoke(entity);
         }
 
         /// <summary>
