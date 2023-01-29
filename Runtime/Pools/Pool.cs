@@ -11,10 +11,11 @@
         public event System.Action<int> Created;
         public event System.Action<int> Removed; 
 
-        public Pool(Config.Pools config)
+        public Pool(Entities entities, Config.Pools config)
         {
             _denseComponents = new TComponent[config.NumberMaxComponents];
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
+            SubscribeEntitiesEvents(entities);
         }
 
         /// <summary>
@@ -95,6 +96,17 @@
         public System.Type GetComponentType()
         {
             return typeof(TComponent);
+        }
+
+        private void SubscribeEntitiesEvents(Entities entities)
+        {
+            entities.Removed += AttemptRemoveEntity;
+        }
+
+        private void AttemptRemoveEntity(int entity)
+        {
+            if (Have(entity))
+                Remove(entity);
         }
     }
 }

@@ -13,7 +13,7 @@
         public PooledWorld(Config config)
         {
             Entities = new Entities(config.ToEntities());
-            Pools = new Pools(config.ToPools());
+            Pools = new Pools(Entities, config.ToPools());
             Groups = new Groups(Pools, config.ToGroups());
             Systems = new Systems();
         }

@@ -5,12 +5,14 @@
     /// </summary>
     public sealed class Pools
     {
+        private readonly Entities _entities;
         private readonly Config.Pools _config;
         private IPool[] _pools;
         private int _poolCount;
 
-        public Pools(Config.Pools config)
+        public Pools(Entities entities, Config.Pools config)
         {
+            _entities = entities;
             _config = config;
             _pools = System.Array.Empty<IPool>();
             _poolCount = 0;
@@ -34,7 +36,7 @@
             System.Array.Resize(ref _pools, _poolCount + 1);
             numberMaxComponents = numberMaxComponents < 1 ? _config.NumberMaxComponents : numberMaxComponents;
             var config = new Config.Pools(_config.NumberMaxEntities, numberMaxComponents);
-            _pools[_poolCount++] = new Pool<TComponent>(config);
+            _pools[_poolCount++] = new Pool<TComponent>(_entities, config);
         }
     }
 }
