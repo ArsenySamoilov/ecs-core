@@ -5,8 +5,8 @@
     /// </summary>
     public readonly struct BoxedEntity
     {
-        public readonly int Id;
-        public readonly int Generation;
+        public int Id { get; }
+        public int Generation { get; }
 
         public BoxedEntity(int id, int generation)
         {
