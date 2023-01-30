@@ -26,6 +26,14 @@
             return _sparseSet.GetEntities();
         }
 
+        /// <summary>
+        /// Returns the index of the entity in the entities' span.
+        /// </summary>
+        public int GetEntityIndex(int entity)
+        {
+            return _sparseSet.Get(entity);
+        }
+
         private void FindMatchingEntities()
         {
             var entities = _includedPools[0].GetEntities();
