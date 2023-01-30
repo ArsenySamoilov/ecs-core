@@ -30,6 +30,17 @@
         }
 
         /// <summary>
+        /// Creates a pool of type <typeparamref name="TComponent"/> if needed and returns itself.
+        /// </summary>
+        /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
+        /// <param name="isTag">Is <typeparamref name="TComponent"/> a tag</param>
+        public Pools AddSafe<TComponent>(int numberMaxComponents = 0, bool isTag = false) where TComponent : struct
+        {
+            Get<TComponent>(numberMaxComponents, isTag);
+            return this;
+        }
+
+        /// <summary>
         /// Returns the pool of type <typeparamref name="TComponent"/> and creates it if needed.
         /// </summary>
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>

@@ -8,7 +8,7 @@ namespace SemsamECS.Core
     public sealed class TagPool<TTag> : IPool where TTag : struct
     {
         private SparseSet _sparseSet;
-        
+
         public event Action<int> Created;
         public event Action<int> Removed;
 
@@ -28,6 +28,15 @@ namespace SemsamECS.Core
         }
 
         /// <summary>
+        /// Creates a tag of type <typeparamref name="TTag"/> for the entity if it doesn't exist.
+        /// </summary>
+        public void CreateSafe(int entity)
+        {
+            if (!Have(entity))
+                Create(entity);
+        }
+
+        /// <summary>
         /// Removes the tag of type <typeparamref name="TTag"/> from the entity.
         /// </summary>
         public void Remove(int entity)
@@ -35,7 +44,16 @@ namespace SemsamECS.Core
             _sparseSet.Delete(entity);
             Removed?.Invoke(entity);
         }
-        
+
+        /// <summary>
+        /// Removes the tag of type <typeparamref name="TTag"/> from the entity if it exists.
+        /// </summary>
+        public void RemoveSafe(int entity)
+        {
+            if (Have(entity))
+                Remove(entity);
+        }
+
         /// <summary>
         /// Checks existence of the tag of type <typeparamref name="TTag"/> in the entity.
         /// </summary>
@@ -59,16 +77,10 @@ namespace SemsamECS.Core
         {
             return typeof(TTag);
         }
-        
+
         private void SubscribeEntitiesEvents(Entities entities)
         {
-            entities.Removed += AttemptRemoveEntity;
-        }
-
-        private void AttemptRemoveEntity(int entity)
-        {
-            if (Have(entity))
-                Remove(entity);
+            entities.Removed += RemoveSafe;
         }
     }
 }

@@ -15,7 +15,7 @@
             _poolContainer = poolContainer;
             _boxedGroups = System.Array.Empty<BoxedGroup>();
         }
-        
+
         /// <summary>
         /// Creates a group.
         /// </summary>
@@ -23,7 +23,7 @@
         public GroupBuilder Create(int numberMaxGrouped = 0)
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
-            var config =  new Config.Groups(_config.NumberMaxEntities, numberMaxGrouped);
+            var config = new Config.Groups(_config.NumberMaxEntities, numberMaxGrouped);
             return new BoxedGroup().CreateBuilder(this, _poolContainer, config);
         }
 
@@ -42,7 +42,7 @@
             private System.Type[] _includedTypes;
             private System.Type[] _excludedTypes;
             private Group _group;
-            
+
             public BoxedGroup()
             {
                 _includedTypes = System.Array.Empty<System.Type>();
@@ -71,7 +71,7 @@
                 groupContainer.Add(this);
                 return _group;
             }
-            
+
             private void SetTypes(IPool[] includedPools, IPool[] excludedPools)
             {
                 _includedTypes = new System.Type[includedPools.Length];

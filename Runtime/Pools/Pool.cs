@@ -9,7 +9,7 @@
         private SparseSet _sparseSet;
 
         public event System.Action<int> Created;
-        public event System.Action<int> Removed; 
+        public event System.Action<int> Removed;
 
         public Pool(Entities entities, Config.Pools config)
         {
@@ -28,7 +28,7 @@
             Created?.Invoke(entity);
             return ref _denseComponents[denseIndex];
         }
-        
+
         /// <summary>
         /// Creates a copy of the source entity's component of type <typeparamref name="TComponent"/> for the entity.
         /// </summary>
@@ -51,6 +51,15 @@
         }
 
         /// <summary>
+        /// Removes the component of type <typeparamref name="TComponent"/> from the entity if it exists.
+        /// </summary>
+        public void RemoveSafe(int entity)
+        {
+            if (Have(entity))
+                Remove(entity);
+        }
+
+        /// <summary>
         /// Checks existence of the component of type <typeparamref name="TComponent"/> in the entity.
         /// </summary>
         public bool Have(int entity)
@@ -67,6 +76,16 @@
         }
 
         /// <summary>
+        /// Returns the component of type <typeparamref name="TComponent"/> that belongs to the entity and creates it if needed.
+        /// </summary>
+        public ref TComponent GetSafe(int entity)
+        {
+            if (Have(entity))
+                return ref Get(entity);
+            return ref Create(entity);
+        }
+
+        /// <summary>
         /// Sets the value to the component of type <typeparamref name="TComponent"/> that belongs to the entity.
         /// </summary>
         public void Set(int entity, TComponent component)
@@ -75,11 +94,33 @@
         }
 
         /// <summary>
+        /// Sets the value to the component of type <typeparamref name="TComponent"/> that belongs to the entity and creates it if needed.
+        /// </summary>
+        public void SetSafe(int entity, TComponent component)
+        {
+            if (Have(entity))
+                Set(entity, component);
+            else
+                Create(entity, component);
+        }
+
+        /// <summary>
         /// Copies the component of type <typeparamref name="TComponent"/> to entity from the source entity.
         /// </summary>
         public void Copy(int entity, int sourceEntity)
         {
             _denseComponents[_sparseSet.Get(entity)] = _denseComponents[_sparseSet.Get(sourceEntity)];
+        }
+
+        /// <summary>
+        /// Copies the component of type <typeparamref name="TComponent"/> to entity from the source entity and creates it if needed.
+        /// </summary>
+        public void CopySafe(int entity, int sourceEntity)
+        {
+            if (Have(entity))
+                Copy(entity, sourceEntity);
+            else
+                Create(entity, sourceEntity);
         }
 
         /// <summary>
@@ -100,13 +141,7 @@
 
         private void SubscribeEntitiesEvents(Entities entities)
         {
-            entities.Removed += AttemptRemoveEntity;
-        }
-
-        private void AttemptRemoveEntity(int entity)
-        {
-            if (Have(entity))
-                Remove(entity);
+            entities.Removed += RemoveSafe;
         }
     }
 }

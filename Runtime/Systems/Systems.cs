@@ -17,7 +17,7 @@
             _startUpSystemCount = 0;
             _executeSystemCount = 0;
         }
-        
+
         /// <summary>
         /// Adds the system.
         /// </summary>

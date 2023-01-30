@@ -18,7 +18,7 @@
             _denseEntityCount = 0;
             System.Array.Fill(_sparseIndices, _sparseIndexNull);
         }
-        
+
         /// <summary>
         /// Adds the entity to the dense array and returns its dense array's index.
         /// </summary>
@@ -27,6 +27,14 @@
             _sparseIndices[entity] = _denseEntityCount;
             _denseEntities[_denseEntityCount] = entity;
             return _denseEntityCount++;
+        }
+
+        /// <summary>
+        /// Adds the entity to the dense array and returns its dense array's index if it doesn't exist.
+        /// </summary>
+        public int AddSafe(int entity)
+        {
+            return Have(entity) ? Get(entity) : Add(entity);
         }
 
         /// <summary>
@@ -43,6 +51,16 @@
         }
 
         /// <summary>
+        /// Deletes the entity from the dense array if it exists and returns its replacement indices.
+        /// </summary>
+        /// <returns>A pair (int1, int2) where int1 is the index of value for replacement by value at the int2 index in the dense array.
+        /// If entity doesn't exist, returns (0, 0)</returns>
+        public (int, int) DeleteSafe(int entity)
+        {
+            return Have(entity) ? Delete(entity) : (0, 0);
+        }
+
+        /// <summary>
         /// Checks existence of the entity in the dense array.
         /// </summary>
         public readonly bool Have(int entity)
@@ -56,6 +74,14 @@
         public readonly int Get(int entity)
         {
             return _sparseIndices[entity];
+        }
+
+        /// <summary>
+        /// Returns dense array's index of the entity and creates it if needed.
+        /// </summary>
+        public int GetSafe(int entity)
+        {
+            return Have(entity) ? Get(entity) : Add(entity);
         }
 
         /// <summary>

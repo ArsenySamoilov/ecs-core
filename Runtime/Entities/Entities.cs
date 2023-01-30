@@ -10,7 +10,7 @@
         private int _currentNextEntity;
 
         public event System.Action<int> Created;
-        public event System.Action<int> Removed; 
+        public event System.Action<int> Removed;
 
         public Entities(Config.Entities config)
         {
@@ -34,6 +34,14 @@
         }
 
         /// <summary>
+        /// Creates an entity in the box for safety.
+        /// </summary>
+        public BoxedEntity CreateSafe()
+        {
+            return Box(Create());
+        }
+
+        /// <summary>
         /// Removes the entity.
         /// </summary>
         public void Remove(int entity)
@@ -45,13 +53,22 @@
         }
 
         /// <summary>
+        /// Removes the entity if it exists.
+        /// </summary>
+        public void RemoveSafe(BoxedEntity boxedEntity)
+        {
+            if (TryUnbox(boxedEntity, out var entity))
+                Remove(entity);
+        }
+
+        /// <summary>
         /// Boxes the entity.
         /// </summary>
         public BoxedEntity Box(int entity)
         {
             return new BoxedEntity(entity, _generations[entity]);
         }
-        
+
         /// <summary>
         /// Tries to unbox the boxed entity.
         /// </summary>
