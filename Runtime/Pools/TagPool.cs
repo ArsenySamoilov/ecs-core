@@ -12,7 +12,7 @@ namespace SemsamECS.Core
         public event Action<int> Created;
         public event Action<int> Removed;
 
-        public TagPool(Entities entities, Config.Pools config)
+        public TagPool(Entities entities, PoolsConfig config)
         {
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
             SubscribeEntitiesEvents(entities);

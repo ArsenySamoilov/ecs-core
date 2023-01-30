@@ -9,7 +9,7 @@
         public int NumberMaxComponents { get; }
         public int NumberMaxGrouped { get; }
 
-        public Config(ConfigBuilder.Options options)
+        private Config(Options options)
         {
             NumberMaxEntities = options.NumberMaxEntities;
             NumberMaxComponents = options.NumberMaxComponents;
@@ -17,70 +17,47 @@
         }
 
         /// <summary>
+        /// Creates the config struct according to the options.
+        /// </summary>
+        public static Config Create(System.Action<Options> options = null)
+        {
+            var configurationOptions = new Options();
+            options?.Invoke(configurationOptions);
+            return new Config(configurationOptions);
+        }
+
+        /// <summary>
         /// Returns a config for entities based on this config.
         /// </summary>
-        public Entities ToEntities()
+        public EntitiesConfig ToEntities()
         {
-            return new Entities(NumberMaxEntities);
+            return new EntitiesConfig(NumberMaxEntities);
         }
 
         /// <summary>
         /// Returns a config for pools based on this config.
         /// </summary>
-        public Pools ToPools()
+        public PoolsConfig ToPools()
         {
-            return new Pools(NumberMaxEntities, NumberMaxComponents);
+            return new PoolsConfig(NumberMaxEntities, NumberMaxComponents);
         }
 
         /// <summary>
         /// Returns a config for groups based on this config.
         /// </summary>
-        public Groups ToGroups()
+        public GroupsConfig ToGroups()
         {
-            return new Groups(NumberMaxEntities, NumberMaxGrouped);
-        }
-        
-        /// <summary>
-        /// A config for entities.
-        /// </summary>
-        public readonly struct Entities
-        {
-            public int NumberMaxEntities { get; }
-
-            public Entities(int numberMaxEntities)
-            {
-                NumberMaxEntities = numberMaxEntities;
-            }
+            return new GroupsConfig(NumberMaxEntities, NumberMaxGrouped);
         }
 
         /// <summary>
-        /// A config for pools.
+        /// Options for a config.
         /// </summary>
-        public readonly struct Pools
+        public sealed class Options
         {
-            public int NumberMaxEntities { get; }
-            public int NumberMaxComponents { get; }
-
-            public Pools(int numberMaxEntities, int numberMaxComponents)
-            {
-                NumberMaxEntities = numberMaxEntities;
-                NumberMaxComponents = numberMaxComponents;
-            }
-        }
-
-        /// <summary>
-        /// A config for groups.
-        /// </summary>
-        public readonly struct Groups
-        {
-            public int NumberMaxEntities { get; }
-            public int NumberMaxGrouped { get; }
-
-            public Groups(int numberMaxEntities, int numberMaxGrouped)
-            {
-                NumberMaxEntities = numberMaxEntities;
-                NumberMaxGrouped = numberMaxGrouped;
-            }
+            public int NumberMaxEntities { get; set; } = 10;
+            public int NumberMaxComponents { get; set; } = 10;
+            public int NumberMaxGrouped { get; set; } = 10;
         }
     }
 }

@@ -9,7 +9,7 @@
         private readonly IPool[] _excludedPools;
         private SparseSet _sparseSet;
 
-        public Group(Config.Groups config, IPool[] includedPools, IPool[] excludedPools)
+        public Group(GroupsConfig config, IPool[] includedPools, IPool[] excludedPools)
         {
             _includedPools = includedPools;
             _excludedPools = excludedPools;

@@ -11,7 +11,7 @@
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public Pool(Entities entities, Config.Pools config)
+        public Pool(Entities entities, PoolsConfig config)
         {
             _denseComponents = new TComponent[config.NumberMaxComponents];
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);

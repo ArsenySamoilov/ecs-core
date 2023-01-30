@@ -6,11 +6,11 @@
     public sealed class Pools
     {
         private readonly Entities _entities;
-        private readonly Config.Pools _config;
+        private readonly PoolsConfig _config;
         private IPool[] _pools;
         private int _poolCount;
 
-        public Pools(Entities entities, Config.Pools config)
+        public Pools(Entities entities, PoolsConfig config)
         {
             _entities = entities;
             _config = config;
@@ -57,7 +57,7 @@
         {
             System.Array.Resize(ref _pools, _poolCount + 1);
             numberMaxComponents = numberMaxComponents < 1 ? _config.NumberMaxComponents : numberMaxComponents;
-            var config = new Config.Pools(_config.NumberMaxEntities, numberMaxComponents);
+            var config = new PoolsConfig(_config.NumberMaxEntities, numberMaxComponents);
             return _pools[_poolCount++] = isTag ? new TagPool<TComponent>(_entities, config) : new Pool<TComponent>(_entities, config);
         }
     }

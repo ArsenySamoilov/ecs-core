@@ -5,11 +5,11 @@
     /// </summary>
     public sealed class Groups
     {
-        private readonly Config.Groups _config;
+        private readonly GroupsConfig _config;
         private readonly Pools _poolContainer;
         private BoxedGroup[] _boxedGroups;
 
-        public Groups(Pools poolContainer, Config.Groups config)
+        public Groups(Pools poolContainer, GroupsConfig config)
         {
             _config = config;
             _poolContainer = poolContainer;
@@ -23,7 +23,7 @@
         public GroupBuilder Create(int numberMaxGrouped = 0)
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
-            var config = new Config.Groups(_config.NumberMaxEntities, numberMaxGrouped);
+            var config = new GroupsConfig(_config.NumberMaxEntities, numberMaxGrouped);
             return new BoxedGroup().CreateBuilder(this, _poolContainer, config);
         }
 
@@ -53,7 +53,7 @@
             /// <summary>
             /// Creates a group builder.
             /// </summary>
-            public GroupBuilder CreateBuilder(Groups groupContainer, Pools poolContainer, Config.Groups config)
+            public GroupBuilder CreateBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config)
             {
                 return new GroupBuilder(groupContainer, poolContainer, config, this);
             }
@@ -61,7 +61,7 @@
             /// <summary>
             /// Returns the matching group and creates it if needed.
             /// </summary>
-            public Group GetGroup(Groups groupContainer, Config.Groups config, IPool[] includedPools, IPool[] excludedPools)
+            public Group GetGroup(Groups groupContainer, GroupsConfig config, IPool[] includedPools, IPool[] excludedPools)
             {
                 SetTypes(includedPools, excludedPools);
                 foreach (var boxedGroup in groupContainer._boxedGroups)

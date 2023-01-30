@@ -12,7 +12,7 @@
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public Entities(Config.Entities config)
+        public Entities(EntitiesConfig config)
         {
             _listNextEntities = new int[config.NumberMaxEntities];
             _generations = new int[config.NumberMaxEntities];
