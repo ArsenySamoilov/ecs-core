@@ -8,11 +8,11 @@
         private readonly Groups _groupContainer;
         private readonly Pools _poolContainer;
         private readonly GroupsConfig _config;
-        private readonly Groups.BoxedGroup _boxedGroup;
+        private readonly BoxedGroup _boxedGroup;
         private IPool[] _includedPools;
         private IPool[] _excludedPools;
 
-        public GroupBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config, Groups.BoxedGroup boxedGroup)
+        public GroupBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config, BoxedGroup boxedGroup)
         {
             _groupContainer = groupContainer;
             _poolContainer = poolContainer;
