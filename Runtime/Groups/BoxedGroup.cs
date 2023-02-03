@@ -3,53 +3,24 @@
     /// <summary>
     /// A box for storage of a group.
     /// </summary>
-    public sealed class BoxedGroup
+    public readonly struct BoxedGroup
     {
-        private System.Type[] _includedTypes;
-        private System.Type[] _excludedTypes;
-        private Group _group;
+        private readonly System.Type[] _includedTypes;
+        private readonly System.Type[] _excludedTypes;
 
-        public BoxedGroup()
+        public Group Group { get; }
+
+        public BoxedGroup(GroupBuilder builder)
         {
-            _includedTypes = System.Array.Empty<System.Type>();
-            _excludedTypes = System.Array.Empty<System.Type>();
-            _group = null;
+            _includedTypes = builder.IncludedTypes;
+            _excludedTypes = builder.ExcludedTypes;
+            Group = new Group(builder.Config, builder.IncludedPools, builder.ExcludedPools);
         }
 
         /// <summary>
-        /// Creates a group builder.
+        /// Checks matching of types for group.
         /// </summary>
-        public GroupBuilder CreateBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config)
-        {
-            return new GroupBuilder(groupContainer, poolContainer, config, this);
-        }
-
-        /// <summary>
-        /// Returns the matching group and creates it if needed.
-        /// </summary>
-        public Group GetGroup(Groups groupContainer, GroupsConfig config, IPool[] includedPools,
-            IPool[] excludedPools)
-        {
-            SetTypes(includedPools, excludedPools);
-            foreach (var boxedGroup in groupContainer.GetGroups())
-                if (boxedGroup.Match(_includedTypes, _excludedTypes))
-                    return boxedGroup._group;
-            _group = new Group(config, includedPools, excludedPools);
-            groupContainer.Add(this);
-            return _group;
-        }
-
-        private void SetTypes(IPool[] includedPools, IPool[] excludedPools)
-        {
-            _includedTypes = new System.Type[includedPools.Length];
-            _excludedTypes = new System.Type[excludedPools.Length];
-            for (var i = includedPools.Length - 1; i > -1; --i)
-                _includedTypes[i] = includedPools[i].GetComponentType();
-            for (var i = excludedPools.Length - 1; i > -1; --i)
-                _excludedTypes[i] = excludedPools[i].GetComponentType();
-        }
-
-        private bool Match(System.Type[] includedTypes, System.Type[] excludedTypes)
+        public bool Match(System.Type[] includedTypes, System.Type[] excludedTypes)
         {
             if (includedTypes.Length != _includedTypes.Length || excludedTypes.Length != _excludedTypes.Length)
                 return false;

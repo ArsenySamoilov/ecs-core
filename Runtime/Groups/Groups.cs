@@ -5,45 +5,46 @@
     /// </summary>
     public sealed class Groups
     {
-        private readonly GroupsConfig _config;
         private readonly Pools _poolContainer;
+        private readonly GroupsConfig _config;
         private BoxedGroup[] _boxedGroups;
 
         public Groups(Pools poolContainer, GroupsConfig config)
         {
-            _config = config;
             _poolContainer = poolContainer;
+            _config = config;
             _boxedGroups = System.Array.Empty<BoxedGroup>();
         }
 
         /// <summary>
-        /// Creates a group.
+        /// Builds a group.
         /// </summary>
+        /// <typeparam name="TComponent">One of the included components in the group</typeparam>
         /// <param name="numberMaxGrouped">Specified created group's capacity.</param>
-        public GroupBuilder Create(int numberMaxGrouped = 0)
+        public GroupBuilder Build<TComponent>(int numberMaxGrouped = 0) where TComponent : struct
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
             var config = new GroupsConfig(_config.NumberMaxEntities, numberMaxGrouped);
-            return new BoxedGroup().CreateBuilder(this, _poolContainer, config);
+            return new GroupBuilder(this, _poolContainer, config).Include<TComponent>();
         }
 
         /// <summary>
-        /// Adds the boxed group and returns itself.
+        /// Creates a group based on the builder.
         /// </summary>
-        public Groups Add(BoxedGroup boxedGroup)
+        public Group Create(GroupBuilder builder)
+        {
+            foreach (var boxedGroup in _boxedGroups)
+                if (boxedGroup.Match(builder.IncludedTypes, builder.ExcludedTypes))
+                    return boxedGroup.Group;
+            return Add(new BoxedGroup(builder));
+        }
+
+        private Group Add(BoxedGroup boxedGroup)
         {
             var boxedGroupCount = _boxedGroups.Length;
             System.Array.Resize(ref _boxedGroups, boxedGroupCount + 1);
             _boxedGroups[boxedGroupCount] = boxedGroup;
-            return this;
-        }
-
-        /// <summary>
-        /// Returns all the groups.
-        /// </summary>
-        public System.ReadOnlySpan<BoxedGroup> GetGroups()
-        {
-            return new System.ReadOnlySpan<BoxedGroup>(_boxedGroups);
+            return boxedGroup.Group;
         }
     }
 }
