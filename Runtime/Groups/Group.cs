@@ -37,8 +37,8 @@
         private void FindMatchingEntities()
         {
             var entities = _includedPools[0].GetEntities();
-            for (int i = 0, entityCount = entities.Length; i < entityCount; ++i)
-                AttemptIncludeEntity(entities[i]);
+            foreach (var entity in entities)
+                AttemptIncludeEntity(entity);
         }
 
         private void SubscribePoolEvents()
@@ -58,10 +58,12 @@
 
         private void AttemptIncludeEntity(int entity)
         {
-            foreach (var pool in _includedPools)
+            System.Span<IPool> includedPoolsAsSpan = _includedPools;
+            System.Span<IPool> excludedPoolsAsSpan = _excludedPools;
+            foreach (var pool in includedPoolsAsSpan)
                 if (!pool.Have(entity))
                     return;
-            foreach (var pool in _excludedPools)
+            foreach (var pool in excludedPoolsAsSpan)
                 if (pool.Have(entity))
                     return;
             _sparseSet.Add(entity);

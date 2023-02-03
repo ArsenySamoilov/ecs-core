@@ -17,8 +17,9 @@
             _listNextEntities = new int[config.NumberMaxEntities];
             _generations = new int[config.NumberMaxEntities];
             _currentNextEntity = 0;
-            for (var i = 0; i < config.NumberMaxEntities; ++i)
-                _listNextEntities[i] = i + 1;
+            System.Span<int> listNextEntitiesAsSpan = _listNextEntities;
+            for (var i = 0; i < listNextEntitiesAsSpan.Length; ++i)
+                listNextEntitiesAsSpan[i] = i + 1;
         }
 
         /// <summary>

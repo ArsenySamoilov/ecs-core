@@ -35,8 +35,9 @@
         /// </summary>
         public void StartUp()
         {
-            for (var i = 0; i < _startUpSystemCount; ++i)
-                _startUpSystems[i].StartUp();
+            System.Span<IStartUpSystem> startUpSystemsAsSpan = _startUpSystems;
+            foreach (var system in startUpSystemsAsSpan)
+                system.StartUp();
         }
 
         /// <summary>
@@ -44,8 +45,9 @@
         /// </summary>
         public void Execute()
         {
-            for (var i = 0; i < _executeSystemCount; ++i)
-                _executeSystems[i].Execute();
+            System.Span<IExecuteSystem> executeSystemsAsSpan = _executeSystems;
+            foreach (var system in executeSystemsAsSpan)
+                system.Execute();
         }
 
         private void AddStartUpSystem(IStartUpSystem startUpSystem)

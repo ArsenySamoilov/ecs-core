@@ -24,10 +24,12 @@
         {
             if (includedTypes.Length != _includedTypes.Length || excludedTypes.Length != _excludedTypes.Length)
                 return false;
-            foreach (var type in includedTypes)
+            System.Span<System.Type> includedTypesAsSpan = includedTypes;
+            System.Span<System.Type> excludedTypesAsSpan = excludedTypes;
+            foreach (var type in includedTypesAsSpan)
                 if (!ContainType(_includedTypes, type))
                     return false;
-            foreach (var type in excludedTypes)
+            foreach (var type in excludedTypesAsSpan)
                 if (!ContainType(_excludedTypes, type))
                     return false;
             return true;

@@ -33,7 +33,8 @@
         /// </summary>
         public Group Create(GroupBuilder builder)
         {
-            foreach (var boxedGroup in _boxedGroups)
+            System.Span<BoxedGroup> boxedGroupsAsSpan = _boxedGroups;
+            foreach (var boxedGroup in boxedGroupsAsSpan)
                 if (boxedGroup.Match(builder.IncludedTypes, builder.ExcludedTypes))
                     return boxedGroup.Group;
             return Add(new BoxedGroup(builder));
