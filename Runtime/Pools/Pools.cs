@@ -3,7 +3,7 @@
     /// <summary>
     /// A container for pools.
     /// </summary>
-    public sealed class Pools
+    public sealed class Pools : System.IDisposable
     {
         private readonly Entities _entityContainer;
         private readonly PoolsConfig _config;
@@ -78,6 +78,16 @@
                 if (typeof(TComponent) == pool.GetComponentType())
                     return (TagPool<TComponent>)pool;
             return (TagPool<TComponent>)Create<TComponent>(numberMaxComponents, true);
+        }
+
+        /// <summary>
+        /// Disposes all the pools before deleting.
+        /// </summary>
+        public void Dispose()
+        {
+            System.Span<IPool> poolsAsSpan = _pools;
+            foreach (var pool in poolsAsSpan)
+                (pool as System.IDisposable)!.Dispose();
         }
 
         private IPool Create<TComponent>(int numberMaxComponents, bool isTag) where TComponent : struct

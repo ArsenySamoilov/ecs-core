@@ -3,19 +3,21 @@
     /// <summary>
     /// A container for components of type <typeparamref name="TComponent"/>.
     /// </summary>
-    public sealed class Pool<TComponent> : IPool where TComponent : struct
+    public sealed class Pool<TComponent> : IPool, System.IDisposable where TComponent : struct
     {
+        private readonly Entities _entityContainer;
         private readonly TComponent[] _denseComponents;
         private SparseSet _sparseSet;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public Pool(Entities entities, PoolsConfig config)
+        public Pool(Entities entityContainer, PoolsConfig config)
         {
+            _entityContainer = entityContainer;
             _denseComponents = new TComponent[config.NumberMaxComponents];
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
-            SubscribeEntitiesEvents(entities);
+            SubscribeEntitiesEvents();
         }
 
         /// <summary>
@@ -139,9 +141,22 @@
             return typeof(TComponent);
         }
 
-        private void SubscribeEntitiesEvents(Entities entities)
+        /// <summary>
+        /// Disposes this pool before deleting.
+        /// </summary>
+        public void Dispose()
         {
-            entities.Removed += RemoveSafe;
+            UnsubscribeEntitiesEvents();
+        }
+
+        private void SubscribeEntitiesEvents()
+        {
+            _entityContainer.Removed += RemoveSafe;
+        }
+
+        private void UnsubscribeEntitiesEvents()
+        {
+            _entityContainer.Removed -= RemoveSafe;
         }
     }
 }

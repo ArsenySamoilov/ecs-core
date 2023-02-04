@@ -3,7 +3,7 @@
     /// <summary>
     /// A container for groups.
     /// </summary>
-    public sealed class Groups
+    public sealed class Groups : System.IDisposable
     {
         private readonly Pools _poolContainer;
         private readonly GroupsConfig _config;
@@ -38,6 +38,16 @@
                 if (boxedGroup.Match(builder.IncludedTypes, builder.ExcludedTypes))
                     return boxedGroup.Group;
             return Add(new BoxedGroup(builder));
+        }
+
+        /// <summary>
+        /// Disposes all the boxed groups before deleting.
+        /// </summary>
+        public void Dispose()
+        {
+            System.Span<BoxedGroup> boxedGroupAsSpan = _boxedGroups;
+            foreach (var boxedGroup in boxedGroupAsSpan)
+                boxedGroup.Dispose();
         }
 
         private Group Add(BoxedGroup boxedGroup)

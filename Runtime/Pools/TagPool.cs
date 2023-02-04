@@ -1,21 +1,21 @@
-﻿using System;
-
-namespace SemsamECS.Core
+﻿namespace SemsamECS.Core
 {
     /// <summary>
     /// A container for tags of type <typeparamref name="TTag"/>.
     /// </summary>
-    public sealed class TagPool<TTag> : IPool where TTag : struct
+    public sealed class TagPool<TTag> : IPool, System.IDisposable where TTag : struct
     {
+        private readonly Entities _entityContainer;
         private SparseSet _sparseSet;
 
-        public event Action<int> Created;
-        public event Action<int> Removed;
+        public event System.Action<int> Created;
+        public event System.Action<int> Removed;
 
-        public TagPool(Entities entities, PoolsConfig config)
+        public TagPool(Entities entityContainer, PoolsConfig config)
         {
+            _entityContainer = entityContainer;
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
-            SubscribeEntitiesEvents(entities);
+            SubscribeEntitiesEvents();
         }
 
         /// <summary>
@@ -63,9 +63,9 @@ namespace SemsamECS.Core
         }
 
         /// <summary>
-        /// Returns all the entities from the pool.
+        /// Returns all the entities from the tag pool.
         /// </summary>
-        public ReadOnlySpan<int> GetEntities()
+        public System.ReadOnlySpan<int> GetEntities()
         {
             return _sparseSet.GetEntities();
         }
@@ -73,14 +73,27 @@ namespace SemsamECS.Core
         /// <summary>
         /// Returns the type of the contained tags.
         /// </summary>
-        public Type GetComponentType()
+        public System.Type GetComponentType()
         {
             return typeof(TTag);
         }
 
-        private void SubscribeEntitiesEvents(Entities entities)
+        /// <summary>
+        /// Disposes this tag pool before deleting.
+        /// </summary>
+        public void Dispose()
         {
-            entities.Removed += RemoveSafe;
+            UnsubscribeEntitiesEvents();
+        }
+
+        private void SubscribeEntitiesEvents()
+        {
+            _entityContainer.Removed += RemoveSafe;
+        }
+
+        private void UnsubscribeEntitiesEvents()
+        {
+            _entityContainer.Removed += RemoveSafe;
         }
     }
 }

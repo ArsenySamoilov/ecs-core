@@ -3,7 +3,7 @@
     /// <summary>
     /// A group of entities with matching set of components.
     /// </summary>
-    public sealed class Group
+    public sealed class Group : System.IDisposable
     {
         private readonly IPool[] _includedPools;
         private readonly IPool[] _excludedPools;
@@ -34,6 +34,14 @@
             return _sparseSet.Get(entity);
         }
 
+        /// <summary>
+        /// Disposes this group before deleting.
+        /// </summary>
+        public void Dispose()
+        {
+            UnsubscribePoolEvents();
+        }
+
         private void FindMatchingEntities()
         {
             var entities = _includedPools[0].GetEntities();
@@ -53,6 +61,21 @@
             {
                 pool.Created += AttemptExcludeEntity;
                 pool.Removed += AttemptIncludeEntity;
+            }
+        }
+
+        private void UnsubscribePoolEvents()
+        {
+            foreach (var pool in _includedPools)
+            {
+                pool.Created -= AttemptIncludeEntity;
+                pool.Removed -= AttemptExcludeEntity;
+            }
+
+            foreach (var pool in _excludedPools)
+            {
+                pool.Created -= AttemptExcludeEntity;
+                pool.Removed -= AttemptIncludeEntity;
             }
         }
 

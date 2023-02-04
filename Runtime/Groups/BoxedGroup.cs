@@ -3,7 +3,7 @@
     /// <summary>
     /// A box for storage of a group.
     /// </summary>
-    public readonly struct BoxedGroup
+    public readonly struct BoxedGroup : System.IDisposable
     {
         private readonly System.Type[] _includedTypes;
         private readonly System.Type[] _excludedTypes;
@@ -33,6 +33,14 @@
                 if (!ContainType(_excludedTypes, type))
                     return false;
             return true;
+        }
+
+        /// <summary>
+        /// Disposes this boxed group before deleting.
+        /// </summary>
+        public void Dispose()
+        {
+            Group.Dispose();
         }
 
         private static bool ContainType(System.Type[] types, System.Type targetType)
