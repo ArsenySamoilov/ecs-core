@@ -11,11 +11,11 @@
         private int _includedCount;
         private int _excludedCount;
 
-        public PoolSet(Pools poolContainer, int includedCount, int excludedCount)
+        public PoolSet(Pools poolContainer, int includedCapacity, int excludedCapacity)
         {
             _poolContainer = poolContainer;
-            _included = new IPool[includedCount];
-            _excluded = new IPool[excludedCount];
+            _included = new IPool[includedCapacity];
+            _excluded = new IPool[excludedCapacity];
             _includedCount = 0;
             _excludedCount = 0;
         }

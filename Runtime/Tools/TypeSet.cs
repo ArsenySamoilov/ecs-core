@@ -10,10 +10,10 @@
         private int _includedCount;
         private int _excludedCount;
 
-        public TypeSet(int includedCount, int excludedCount)
+        public TypeSet(int includedCapacity, int excludedCapacity)
         {
-            _included = new System.Type[includedCount];
-            _excluded = new System.Type[excludedCount];
+            _included = new System.Type[includedCapacity];
+            _excluded = new System.Type[excludedCapacity];
             _includedCount = 0;
             _excludedCount = 0;
         }

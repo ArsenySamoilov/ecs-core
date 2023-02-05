@@ -10,10 +10,10 @@
 
         public TypeSet TypeSet => _typeSet;
 
-        public GroupRuiner(Groups groupContainer)
+        public GroupRuiner(Groups groupContainer, int includedCapacity, int excludedCapacity)
         {
             _groupContainer = groupContainer;
-            _typeSet = new TypeSet(1, 0);
+            _typeSet = new TypeSet(includedCapacity, excludedCapacity);
         }
 
         /// <summary>

@@ -13,11 +13,11 @@
         public PoolSet PoolSet => _poolSet;
         public TypeSet TypeSet => _typeSet;
 
-        public GroupBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config)
+        public GroupBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config, int includedCapacity, int excludedCapacity)
         {
             _groupContainer = groupContainer;
-            _poolSet = new PoolSet(poolContainer, 1, 0);
-            _typeSet = new TypeSet(1, 0);
+            _poolSet = new PoolSet(poolContainer, includedCapacity, excludedCapacity);
+            _typeSet = new TypeSet(includedCapacity, excludedCapacity);
             Config = config;
         }
 

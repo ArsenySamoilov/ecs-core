@@ -22,21 +22,25 @@
         /// Builds a group.
         /// </summary>
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        /// <param name="numberMaxGrouped">Specified created group's capacity.</param>
-        public GroupBuilder Build<TComponent>(int numberMaxGrouped = 0) where TComponent : struct
+        /// <param name="numberMaxGrouped">Specified created group's capacity</param>
+        /// <param name="includedCapacity">Specified included count for array's creation</param>
+        /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
+        public GroupBuilder Build<TComponent>(int numberMaxGrouped = 0, int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
             var config = new GroupsConfig(_config.NumberMaxEntities, numberMaxGrouped);
-            return new GroupBuilder(this, _poolContainer, config).Include<TComponent>();
+            return new GroupBuilder(this, _poolContainer, config, includedCapacity, excludedCapacity).Include<TComponent>();
         }
 
         /// <summary>
         /// Ruins the group.
         /// </summary>
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        public GroupRuiner Ruin<TComponent>() where TComponent : struct
+        /// <param name="includedCapacity">Specified included count for array's creation</param>
+        /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
+        public GroupRuiner Ruin<TComponent>(int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
         {
-            return new GroupRuiner(this).Include<TComponent>();
+            return new GroupRuiner(this, includedCapacity, excludedCapacity).Include<TComponent>();
         }
 
         /// <summary>
