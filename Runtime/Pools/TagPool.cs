@@ -11,7 +11,7 @@
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public TagPool(Entities entityContainer, PoolsConfig config)
+        public TagPool(Entities entityContainer, PoolConfig config)
         {
             _entityContainer = entityContainer;
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);

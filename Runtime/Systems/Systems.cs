@@ -10,10 +10,10 @@
         private int _startUpSystemCount;
         private int _executeSystemCount;
 
-        public Systems()
+        public Systems(SystemsConfig config)
         {
-            _startUpSystems = System.Array.Empty<IStartUpSystem>();
-            _executeSystems = System.Array.Empty<IExecuteSystem>();
+            _startUpSystems = new IStartUpSystem[config.SystemsCapacity];
+            _executeSystems = new IExecuteSystem[config.SystemsCapacity];
             _startUpSystemCount = 0;
             _executeSystemCount = 0;
         }
@@ -36,8 +36,8 @@
         public void StartUp()
         {
             System.Span<IStartUpSystem> startUpSystemsAsSpan = _startUpSystems;
-            foreach (var system in startUpSystemsAsSpan)
-                system.StartUp();
+            for (var i = 0; i < _startUpSystemCount; ++i)
+                startUpSystemsAsSpan[i].StartUp();
         }
 
         /// <summary>
@@ -46,19 +46,21 @@
         public void Execute()
         {
             System.Span<IExecuteSystem> executeSystemsAsSpan = _executeSystems;
-            foreach (var system in executeSystemsAsSpan)
-                system.Execute();
+            for (var i = 0; i < _executeSystemCount; ++i)
+                executeSystemsAsSpan[i].Execute();
         }
 
         private void AddStartUpSystem(IStartUpSystem startUpSystem)
         {
-            System.Array.Resize(ref _startUpSystems, _startUpSystemCount + 1);
+            if (_startUpSystems.Length == _startUpSystemCount)
+                System.Array.Resize(ref _startUpSystems, _startUpSystemCount + 1);
             _startUpSystems[_startUpSystemCount++] = startUpSystem;
         }
 
         private void AddExecuteSystem(IExecuteSystem executeSystem)
         {
-            System.Array.Resize(ref _executeSystems, _executeSystemCount + 1);
+            if (_executeSystems.Length == _executeSystemCount)
+                System.Array.Resize(ref _executeSystems, _executeSystemCount + 1);
             _executeSystems[_executeSystemCount++] = executeSystem;
         }
     }

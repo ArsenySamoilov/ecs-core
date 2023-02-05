@@ -7,6 +7,11 @@
     {
         public int NumberMaxEntities { get; }
 
+        public EntitiesConfig(Config config)
+        {
+            NumberMaxEntities = config.NumberMaxEntities;
+        }
+
         public EntitiesConfig(int numberMaxEntities)
         {
             NumberMaxEntities = numberMaxEntities;

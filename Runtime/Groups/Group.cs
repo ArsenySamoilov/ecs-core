@@ -8,7 +8,7 @@
         private readonly PoolSet _poolSet;
         private SparseSet _sparseSet;
 
-        public Group(GroupsConfig config, PoolSet poolSet)
+        public Group(GroupConfig config, PoolSet poolSet)
         {
             _poolSet = poolSet;
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxGrouped);

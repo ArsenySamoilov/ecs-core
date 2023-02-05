@@ -12,10 +12,10 @@
 
         public PooledWorld(Config config)
         {
-            Entities = new Entities(config.ToEntities());
-            Pools = new Pools(Entities, config.ToPools());
-            Groups = new Groups(Pools, config.ToGroups());
-            Systems = new Systems();
+            Entities = new Entities(config.AsEntities());
+            Pools = new Pools(Entities, config.AsPools());
+            Groups = new Groups(Pools, config.AsGroups());
+            Systems = new Systems(config.AsSystems());
         }
 
         /// <summary>

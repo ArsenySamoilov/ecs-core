@@ -12,7 +12,7 @@
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public Pool(Entities entityContainer, PoolsConfig config)
+        public Pool(Entities entityContainer, PoolConfig config)
         {
             _entityContainer = entityContainer;
             _denseComponents = new TComponent[config.NumberMaxComponents];

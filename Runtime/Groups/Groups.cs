@@ -14,7 +14,7 @@
         {
             _poolContainer = poolContainer;
             _config = config;
-            _boxedGroups = System.Array.Empty<BoxedGroup>();
+            _boxedGroups = new BoxedGroup[config.GroupsCapacity];
             _boxedGroupCount = 0;
         }
 
@@ -28,7 +28,7 @@
         public GroupBuilder Build<TComponent>(int numberMaxGrouped = 0, int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
-            var config = new GroupsConfig(_config.NumberMaxEntities, numberMaxGrouped);
+            var config = new GroupConfig(_config.NumberMaxEntities, numberMaxGrouped);
             return new GroupBuilder(this, _poolContainer, config, includedCapacity, excludedCapacity).Include<TComponent>();
         }
 

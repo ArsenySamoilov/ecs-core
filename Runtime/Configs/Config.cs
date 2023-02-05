@@ -8,12 +8,18 @@
         public int NumberMaxEntities { get; }
         public int NumberMaxComponents { get; }
         public int NumberMaxGrouped { get; }
+        public int PoolsCapacity { get; }
+        public int GroupsCapacity { get; }
+        public int SystemsCapacity { get; }
 
         private Config(Options options)
         {
             NumberMaxEntities = options.NumberMaxEntities;
             NumberMaxComponents = options.NumberMaxComponents;
             NumberMaxGrouped = options.NumberMaxGrouped;
+            PoolsCapacity = options.PoolsCapacity;
+            GroupsCapacity = options.GroupsCapacity;
+            SystemsCapacity = options.SystemsCapacity;
         }
 
         /// <summary>
@@ -29,25 +35,33 @@
         /// <summary>
         /// Returns a config for entities based on this config.
         /// </summary>
-        public EntitiesConfig ToEntities()
+        public EntitiesConfig AsEntities()
         {
-            return new EntitiesConfig(NumberMaxEntities);
+            return new EntitiesConfig(this);
         }
 
         /// <summary>
         /// Returns a config for pools based on this config.
         /// </summary>
-        public PoolsConfig ToPools()
+        public PoolsConfig AsPools()
         {
-            return new PoolsConfig(NumberMaxEntities, NumberMaxComponents);
+            return new PoolsConfig(this);
         }
 
         /// <summary>
         /// Returns a config for groups based on this config.
         /// </summary>
-        public GroupsConfig ToGroups()
+        public GroupsConfig AsGroups()
         {
-            return new GroupsConfig(NumberMaxEntities, NumberMaxGrouped);
+            return new GroupsConfig(this);
+        }
+
+        /// <summary>
+        /// Returns a config for systems based on this config.
+        /// </summary>
+        public SystemsConfig AsSystems()
+        {
+            return new SystemsConfig(this);
         }
 
         /// <summary>
@@ -58,6 +72,9 @@
             public int NumberMaxEntities { get; set; } = 10;
             public int NumberMaxComponents { get; set; } = 10;
             public int NumberMaxGrouped { get; set; } = 10;
+            public int PoolsCapacity { get; set; } = 1;
+            public int GroupsCapacity { get; set; } = 1;
+            public int SystemsCapacity { get; set; } = 1;
         }
     }
 }
