@@ -5,14 +5,12 @@
     /// </summary>
     public sealed class Group : System.IDisposable
     {
-        private readonly IPool[] _includedPools;
-        private readonly IPool[] _excludedPools;
+        private readonly PoolSet _poolSet;
         private SparseSet _sparseSet;
 
-        public Group(GroupsConfig config, IPool[] includedPools, IPool[] excludedPools)
+        public Group(GroupsConfig config, PoolSet poolSet)
         {
-            _includedPools = includedPools;
-            _excludedPools = excludedPools;
+            _poolSet = poolSet;
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxGrouped);
             FindMatchingEntities();
             SubscribePoolEvents();
@@ -44,20 +42,20 @@
 
         private void FindMatchingEntities()
         {
-            var entities = _includedPools[0].GetEntities();
+            var entities = _poolSet.GetIncludedAsSpan()[0].GetEntities();
             foreach (var entity in entities)
                 AttemptIncludeEntity(entity);
         }
 
         private void SubscribePoolEvents()
         {
-            foreach (var pool in _includedPools)
+            foreach (var pool in _poolSet.GetIncludedAsSpan())
             {
                 pool.Created += AttemptIncludeEntity;
                 pool.Removed += AttemptExcludeEntity;
             }
 
-            foreach (var pool in _excludedPools)
+            foreach (var pool in _poolSet.GetExcludedAsSpan())
             {
                 pool.Created += AttemptExcludeEntity;
                 pool.Removed += AttemptIncludeEntity;
@@ -66,13 +64,13 @@
 
         private void UnsubscribePoolEvents()
         {
-            foreach (var pool in _includedPools)
+            foreach (var pool in _poolSet.GetIncludedAsSpan())
             {
                 pool.Created -= AttemptIncludeEntity;
                 pool.Removed -= AttemptExcludeEntity;
             }
 
-            foreach (var pool in _excludedPools)
+            foreach (var pool in _poolSet.GetExcludedAsSpan())
             {
                 pool.Created -= AttemptExcludeEntity;
                 pool.Removed -= AttemptIncludeEntity;
@@ -81,15 +79,8 @@
 
         private void AttemptIncludeEntity(int entity)
         {
-            System.Span<IPool> includedPoolsAsSpan = _includedPools;
-            System.Span<IPool> excludedPoolsAsSpan = _excludedPools;
-            foreach (var pool in includedPoolsAsSpan)
-                if (!pool.Have(entity))
-                    return;
-            foreach (var pool in excludedPoolsAsSpan)
-                if (pool.Have(entity))
-                    return;
-            _sparseSet.Add(entity);
+            if (_poolSet.MatchEntity(entity))
+                _sparseSet.Add(entity);
         }
 
         private void AttemptExcludeEntity(int entity)

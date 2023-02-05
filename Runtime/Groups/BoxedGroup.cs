@@ -12,7 +12,7 @@
         public BoxedGroup(GroupBuilder builder)
         {
             _typeSet = builder.TypeSet;
-            Group = new Group(builder.Config, builder.IncludedPools, builder.ExcludedPools);
+            Group = new Group(builder.Config, builder.PoolSet);
         }
 
         /// <summary>

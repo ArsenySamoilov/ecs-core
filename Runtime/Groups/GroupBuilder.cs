@@ -6,22 +6,17 @@
     public sealed class GroupBuilder
     {
         private readonly Groups _groupContainer;
-        private readonly Pools _poolContainer;
-        private IPool[] _includedPools;
-        private IPool[] _excludedPools;
+        private PoolSet _poolSet;
         private TypeSet _typeSet;
 
         public GroupsConfig Config { get; }
-        public IPool[] IncludedPools => _includedPools;
-        public IPool[] ExcludedPools => _excludedPools;
+        public PoolSet PoolSet => _poolSet;
         public TypeSet TypeSet => _typeSet;
 
         public GroupBuilder(Groups groupContainer, Pools poolContainer, GroupsConfig config)
         {
             _groupContainer = groupContainer;
-            _poolContainer = poolContainer;
-            _includedPools = System.Array.Empty<IPool>();
-            _excludedPools = System.Array.Empty<IPool>();
+            _poolSet = new PoolSet(poolContainer, 1, 0);
             _typeSet = new TypeSet(1, 0);
             Config = config;
         }
@@ -31,9 +26,7 @@
         /// </summary>
         public GroupBuilder Include<TComponent>() where TComponent : struct
         {
-            var includedCount = _includedPools.Length;
-            System.Array.Resize(ref _includedPools, includedCount + 1);
-            _includedPools[includedCount] = _poolContainer.Get<TComponent>();
+            _poolSet.Include<TComponent>();
             _typeSet.AddIncluded(typeof(TComponent));
             return this;
         }
@@ -43,9 +36,7 @@
         /// </summary>
         public GroupBuilder Exclude<TComponent>() where TComponent : struct
         {
-            var excludedCount = _excludedPools.Length;
-            System.Array.Resize(ref _excludedPools, excludedCount + 1);
-            _excludedPools[excludedCount] = _poolContainer.Get<TComponent>();
+            _poolSet.Exclude<TComponent>();
             _typeSet.AddExcluded(typeof(TComponent));
             return this;
         }
