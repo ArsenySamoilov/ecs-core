@@ -41,9 +41,9 @@
         /// </summary>
         public void StartUp()
         {
-            System.Span<IStartUpSystem> startUpSystemsAsSpan = _startUpSystems;
-            for (var i = 0; i < _startUpSystemCount; ++i)
-                startUpSystemsAsSpan[i].StartUp();
+            var startUpSystemsAsSpan = new System.Span<IStartUpSystem>(_startUpSystems, 0, _startUpSystemCount);
+            foreach (var system in startUpSystemsAsSpan)
+                system.StartUp();
         }
 
         /// <summary>
@@ -51,9 +51,9 @@
         /// </summary>
         public void Execute()
         {
-            System.Span<IExecuteSystem> executeSystemsAsSpan = _executeSystems;
-            for (var i = 0; i < _executeSystemCount; ++i)
-                executeSystemsAsSpan[i].Execute();
+            var executeSystemsAsSpan = new System.Span<IExecuteSystem>(_executeSystems, 0, _executeSystemCount);
+            foreach (var system in executeSystemsAsSpan)
+                system.Execute();
         }
 
         /// <summary>

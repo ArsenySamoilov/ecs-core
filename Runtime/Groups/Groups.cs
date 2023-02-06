@@ -48,10 +48,10 @@
         /// </summary>
         public Group Create(GroupBuilder builder)
         {
-            System.Span<BoxedGroup> boxedGroupsAsSpan = _boxedGroups;
-            for (var i = 0; i < _boxedGroupCount; ++i)
-                if (boxedGroupsAsSpan[i].Match(builder.TypeSet))
-                    return boxedGroupsAsSpan[i].Group;
+            var boxedGroupsAsSpan = new System.Span<BoxedGroup>(_boxedGroups, 0, _boxedGroupCount);
+            foreach (var boxedGroup in boxedGroupsAsSpan)
+                if (boxedGroup.Match(builder.TypeSet))
+                    return boxedGroup.Group;
             return Add(new BoxedGroup(builder));
         }
 
@@ -60,7 +60,7 @@
         /// </summary>
         public Groups Remove(GroupRuiner ruiner)
         {
-            System.Span<BoxedGroup> boxedGroupsAsSpan = _boxedGroups;
+            var boxedGroupsAsSpan = new System.Span<BoxedGroup>(_boxedGroups, 0, _boxedGroupCount);
             for (var i = 0; i < _boxedGroupCount; ++i)
                 if (boxedGroupsAsSpan[i].Match(ruiner.TypeSet))
                     return Delete(i);
@@ -72,9 +72,9 @@
         /// </summary>
         public void Dispose()
         {
-            System.Span<BoxedGroup> boxedGroupsAsSpan = _boxedGroups;
-            for (var i = 0; i < _boxedGroupCount; ++i)
-                boxedGroupsAsSpan[i].Dispose();
+            var boxedGroupsAsSpan = new System.Span<BoxedGroup>(_boxedGroups, 0, _boxedGroupCount);
+            foreach (var boxedGroup in boxedGroupsAsSpan)
+                boxedGroup.Dispose();
         }
 
         private Group Add(BoxedGroup boxedGroup)

@@ -47,10 +47,10 @@
         /// <param name="isTag">Is <typeparamref name="TComponent"/> a tag</param>
         public IPool Get<TComponent>(int numberMaxComponents = 0, bool isTag = false) where TComponent : struct
         {
-            System.Span<IPool> poolsAsSpan = _pools;
-            for (var i = 0; i < _poolCount; ++i)
-                if (typeof(TComponent) == poolsAsSpan[i].GetComponentType())
-                    return poolsAsSpan[i];
+            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            foreach (var pool in poolsAsSpan)
+                if (typeof(TComponent) == pool.GetComponentType())
+                    return pool;
             return Create<TComponent>(numberMaxComponents, isTag);
         }
 
@@ -60,10 +60,10 @@
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
         public Pool<TComponent> GetPool<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
-            System.Span<IPool> poolsAsSpan = _pools;
-            for (var i = 0; i < _poolCount; ++i)
-                if (typeof(TComponent) == poolsAsSpan[i].GetComponentType())
-                    return (Pool<TComponent>)poolsAsSpan[i];
+            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            foreach (var pool in poolsAsSpan)
+                if (typeof(TComponent) == pool.GetComponentType())
+                    return (Pool<TComponent>)pool;
             return (Pool<TComponent>)Create<TComponent>(numberMaxComponents, false);
         }
 
@@ -73,10 +73,10 @@
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
         public TagPool<TComponent> GetTagPool<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
-            System.Span<IPool> poolsAsSpan = _pools;
-            for (var i = 0; i < _poolCount; ++i)
-                if (typeof(TComponent) == poolsAsSpan[i].GetComponentType())
-                    return (TagPool<TComponent>)poolsAsSpan[i];
+            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            foreach (var pool in poolsAsSpan)
+                if (typeof(TComponent) == pool.GetComponentType())
+                    return (TagPool<TComponent>)pool;
             return (TagPool<TComponent>)Create<TComponent>(numberMaxComponents, true);
         }
 
@@ -85,9 +85,9 @@
         /// </summary>
         public void Dispose()
         {
-            System.Span<IPool> poolsAsSpan = _pools;
-            for (var i = 0; i < _poolCount; ++i)
-                (poolsAsSpan[i] as System.IDisposable)!.Dispose();
+            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            foreach (var pool in poolsAsSpan)
+                (pool as System.IDisposable)!.Dispose();
         }
 
         private IPool Create<TComponent>(int numberMaxComponents, bool isTag) where TComponent : struct
