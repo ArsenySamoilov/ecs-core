@@ -2,16 +2,25 @@
 {
     public readonly struct SystemsConfig
     {
-        public int SystemsCapacity { get; }
+        public int DefaultSystemsCapacity { get; }
+        public int StartUpSystemsCapacity { get; }
+        public int ExecuteSystemsCapacity { get; }
+        public int DisposableSystemsCapacity { get; }
 
         public SystemsConfig(Config config)
         {
-            SystemsCapacity = config.SystemsCapacity;
+            DefaultSystemsCapacity = config.DefaultSystemsCapacity;
+            StartUpSystemsCapacity = config.StartUpSystemsCapacity;
+            ExecuteSystemsCapacity = config.ExecuteSystemsCapacity;
+            DisposableSystemsCapacity = config.DisposableSystemsCapacity;
         }
 
-        public SystemsConfig(int systemsCapacity)
+        public SystemsConfig(int defaultSystemsCapacity, int startUpSystemsCapacity, int executeSystemsCapacity, int disposableSystemsCapacity)
         {
-            SystemsCapacity = systemsCapacity;
+            DefaultSystemsCapacity = defaultSystemsCapacity;
+            StartUpSystemsCapacity = startUpSystemsCapacity;
+            ExecuteSystemsCapacity = executeSystemsCapacity;
+            DisposableSystemsCapacity = disposableSystemsCapacity;
         }
     }
 }

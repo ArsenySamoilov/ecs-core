@@ -14,9 +14,9 @@
 
         public Systems(SystemsConfig config)
         {
-            _startUpSystems = new IStartUpSystem[config.SystemsCapacity];
-            _executeSystems = new IExecuteSystem[config.SystemsCapacity];
-            _disposableSystems = new System.IDisposable[config.SystemsCapacity];
+            _startUpSystems = new IStartUpSystem[ChooseCapacity(config.StartUpSystemsCapacity, config.DefaultSystemsCapacity)];
+            _executeSystems = new IExecuteSystem[ChooseCapacity(config.ExecuteSystemsCapacity, config.DefaultSystemsCapacity)];
+            _disposableSystems = new System.IDisposable[ChooseCapacity(config.DisposableSystemsCapacity, config.DefaultSystemsCapacity)];
             _startUpSystemCount = 0;
             _executeSystemCount = 0;
             _disposableSystemCount = 0;
@@ -64,6 +64,11 @@
             var disposableSystemsAsSpan = new System.Span<System.IDisposable>(_disposableSystems, 0, _disposableSystemCount);
             foreach (var system in disposableSystemsAsSpan)
                 system.Dispose();
+        }
+
+        private int ChooseCapacity(int expectedCapacity, int defaultCapacity)
+        {
+            return expectedCapacity < 0 ? defaultCapacity : expectedCapacity;
         }
 
         private void AddStartUpSystem(IStartUpSystem startUpSystem)

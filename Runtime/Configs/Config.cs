@@ -10,7 +10,10 @@
         public int NumberMaxGrouped { get; }
         public int PoolsCapacity { get; }
         public int GroupsCapacity { get; }
-        public int SystemsCapacity { get; }
+        public int DefaultSystemsCapacity { get; }
+        public int StartUpSystemsCapacity { get; }
+        public int ExecuteSystemsCapacity { get; }
+        public int DisposableSystemsCapacity { get; }
 
         private Config(Options options)
         {
@@ -19,7 +22,10 @@
             NumberMaxGrouped = options.NumberMaxGrouped;
             PoolsCapacity = options.PoolsCapacity;
             GroupsCapacity = options.GroupsCapacity;
-            SystemsCapacity = options.SystemsCapacity;
+            DefaultSystemsCapacity = options.DefaultSystemsCapacity;
+            StartUpSystemsCapacity = options.StartUpSystemsCapacity;
+            ExecuteSystemsCapacity = options.ExecuteSystemsCapacity;
+            DisposableSystemsCapacity = options.DisposableSystemsCapacity;
         }
 
         /// <summary>
@@ -74,7 +80,10 @@
             public int NumberMaxGrouped { get; set; } = 10;
             public int PoolsCapacity { get; set; } = 1;
             public int GroupsCapacity { get; set; } = 1;
-            public int SystemsCapacity { get; set; } = 1;
+            public int DefaultSystemsCapacity { get; set; } = 1;
+            public int StartUpSystemsCapacity { get; set; } = -1;
+            public int ExecuteSystemsCapacity { get; set; } = -1;
+            public int DisposableSystemsCapacity { get; set; } = -1;
         }
     }
 }
