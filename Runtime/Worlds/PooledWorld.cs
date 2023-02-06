@@ -25,6 +25,7 @@
         {
             Pools.Dispose();
             Groups.Dispose();
+            Systems.Dispose();
         }
     }
 }
