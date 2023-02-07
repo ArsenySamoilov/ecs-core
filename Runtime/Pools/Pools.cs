@@ -3,81 +3,69 @@
     /// <summary>
     /// A container for pools.
     /// </summary>
-    public sealed class Pools : System.IDisposable
+    public sealed class Pools : IPools, IPoolsForContainer, IPoolsForGroup, System.IDisposable
     {
-        private readonly Entities _entityContainer;
+        private readonly IEntitiesForPool _entityContainer;
         private readonly PoolsConfig _config;
-        private IPool[] _pools;
+        private IPoolForContainer[] _pools;
         private int _poolCount;
 
-        public Pools(Entities entityContainer, PoolsConfig config)
+        public Pools(IEntitiesForPool entityContainer, PoolsConfig config)
         {
             _entityContainer = entityContainer;
             _config = config;
-            _pools = new IPool[config.PoolsCapacity];
+            _pools = new IPoolForContainer[config.PoolsCapacity];
             _poolCount = 0;
         }
 
         /// <summary>
         /// Creates a pool of type <typeparamref name="TComponent"/> and returns itself.
+        /// Doesn't check the presence of the pool in the container.
         /// </summary>
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
-        /// <param name="isTag">Is <typeparamref name="TComponent"/> a tag</param>
-        public Pools Add<TComponent>(int numberMaxComponents = 0, bool isTag = false) where TComponent : struct
+        public Pools Add<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
-            Create<TComponent>(numberMaxComponents, isTag);
+            Create<TComponent>(numberMaxComponents);
             return this;
         }
 
         /// <summary>
-        /// Creates a pool of type <typeparamref name="TComponent"/> if needed and returns itself.
+        /// Creates a pool of type <typeparamref name="TComponent"/> and returns itself.
+        /// Checks the presence of the pool in the container.
         /// </summary>
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
-        /// <param name="isTag">Is <typeparamref name="TComponent"/> a tag</param>
-        public Pools AddSafe<TComponent>(int numberMaxComponents = 0, bool isTag = false) where TComponent : struct
+        public Pools AddSafe<TComponent>(int numberMaxComponents = 0) where TComponent : struct
         {
-            Get<TComponent>(numberMaxComponents, isTag);
+            ((IPools)this).Get<TComponent>(numberMaxComponents);
             return this;
         }
 
         /// <summary>
-        /// Returns the interface of pool of type <typeparamref name="TComponent"/> and creates it if needed.
+        /// Returns the interface of pool of type <typeparamref name="TComponent"/>.
+        /// Checks the presence of the pool in the container.
         /// </summary>
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
-        /// <param name="isTag">Is <typeparamref name="TComponent"/> a tag</param>
-        public IPool Get<TComponent>(int numberMaxComponents = 0, bool isTag = false) where TComponent : struct
+        IPoolForGroup IPoolsForGroup.Get<TComponent>(int numberMaxComponents) where TComponent : struct
         {
-            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            var poolsAsSpan = new System.Span<IPoolForContainer>(_pools, 0, _poolCount);
             foreach (var pool in poolsAsSpan)
-                if (typeof(TComponent) == pool.GetComponentType())
-                    return pool;
-            return Create<TComponent>(numberMaxComponents, isTag);
+                if (pool.MatchComponentType<TComponent>())
+                    return (IPoolForGroup)pool;
+            return (IPoolForGroup)Create<TComponent>(numberMaxComponents);
         }
 
         /// <summary>
         /// Returns the pool of type <typeparamref name="TComponent"/> and creates it if needed.
+        /// Checks the presence of the pool in the container.
         /// </summary>
         /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
-        public Pool<TComponent> GetPool<TComponent>(int numberMaxComponents = 0) where TComponent : struct
+        IPool<TComponent> IPools.Get<TComponent>(int numberMaxComponents) where TComponent : struct
         {
-            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            var poolsAsSpan = new System.Span<IPoolForContainer>(_pools, 0, _poolCount);
             foreach (var pool in poolsAsSpan)
-                if (typeof(TComponent) == pool.GetComponentType())
-                    return (Pool<TComponent>)pool;
-            return (Pool<TComponent>)Create<TComponent>(numberMaxComponents, false);
-        }
-
-        /// <summary>
-        /// Returns the tag pool of type <typeparamref name="TComponent"/> and creates it if needed.
-        /// </summary>
-        /// <param name="numberMaxComponents">Specified components' capacity for the pool if it needs to be created.</param>
-        public TagPool<TComponent> GetTagPool<TComponent>(int numberMaxComponents = 0) where TComponent : struct
-        {
-            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
-            foreach (var pool in poolsAsSpan)
-                if (typeof(TComponent) == pool.GetComponentType())
-                    return (TagPool<TComponent>)pool;
-            return (TagPool<TComponent>)Create<TComponent>(numberMaxComponents, true);
+                if (pool.MatchComponentType<TComponent>())
+                    return (IPool<TComponent>)pool;
+            return (IPool<TComponent>)Create<TComponent>(numberMaxComponents);
         }
 
         /// <summary>
@@ -85,18 +73,20 @@
         /// </summary>
         public void Dispose()
         {
-            var poolsAsSpan = new System.Span<IPool>(_pools, 0, _poolCount);
+            var poolsAsSpan = new System.Span<IPoolForContainer>(_pools, 0, _poolCount);
             foreach (var pool in poolsAsSpan)
-                (pool as System.IDisposable)!.Dispose();
+                pool.Dispose();
         }
 
-        private IPool Create<TComponent>(int numberMaxComponents, bool isTag) where TComponent : struct
+        private IPoolForContainer Create<TComponent>(int numberMaxComponents) where TComponent : struct
         {
             if (_pools.Length == _poolCount)
                 System.Array.Resize(ref _pools, _poolCount + 1);
             numberMaxComponents = numberMaxComponents < 1 ? _config.NumberMaxComponents : numberMaxComponents;
             var config = new PoolConfig(_config.NumberMaxEntities, numberMaxComponents);
-            IPool pool = isTag ? new TagPool<TComponent>(_entityContainer, config) : new Pool<TComponent>(_entityContainer, config);
+            var isTag = typeof(ITag).IsAssignableFrom(typeof(TComponent));
+            IPoolForContainer pool =
+                isTag ? new TagPool<TComponent>(_entityContainer, config) : new ComponentPool<TComponent>(_entityContainer, config);
             return _pools[_poolCount++] = pool;
         }
     }

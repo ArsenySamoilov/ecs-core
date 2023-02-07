@@ -3,7 +3,7 @@
     /// <summary>
     /// A container for systems.
     /// </summary>
-    public sealed class Systems : System.IDisposable
+    public sealed class Systems : ISystems, ISystemsForContainer, System.IDisposable
     {
         private IStartUpSystem[] _startUpSystems;
         private IExecuteSystem[] _executeSystems;
@@ -25,7 +25,7 @@
         /// <summary>
         /// Adds the system.
         /// </summary>
-        public Systems Add(ISystem system)
+        public ISystems Add(ISystem system)
         {
             if (system is IStartUpSystem startUpSystem)
                 AddStartUpSystem(startUpSystem);

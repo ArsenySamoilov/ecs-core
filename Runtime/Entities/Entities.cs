@@ -3,13 +3,12 @@
     /// <summary>
     /// A container for entities.
     /// </summary>
-    public sealed class Entities
+    public sealed class Entities : IEntities, IEntitiesForContainer, IEntitiesForPool
     {
         private readonly int[] _listNextEntities;
         private readonly int[] _generations;
         private int _currentNextEntity;
 
-        public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
         public Entities(EntitiesConfig config)
@@ -30,7 +29,6 @@
             var entity = _currentNextEntity;
             _currentNextEntity = _listNextEntities[entity];
             _listNextEntities[entity] = entity;
-            Created?.Invoke(entity);
             return entity;
         }
 

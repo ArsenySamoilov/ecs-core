@@ -3,9 +3,9 @@
     /// <summary>
     /// A builder for a group.
     /// </summary>
-    public sealed class GroupBuilder
+    public sealed class GroupBuilder : IGroupBuilder, IGroupBuilderCompleted
     {
-        private readonly Groups _groupContainer;
+        private readonly IGroupsForBuilder _groupContainer;
         private PoolSet _poolSet;
         private TypeSet _typeSet;
 
@@ -13,7 +13,7 @@
         public PoolSet PoolSet => _poolSet;
         public TypeSet TypeSet => _typeSet;
 
-        public GroupBuilder(Groups groupContainer, Pools poolContainer, GroupConfig config, int includedCapacity, int excludedCapacity)
+        public GroupBuilder(IGroupsForBuilder groupContainer, IPoolsForGroup poolContainer, GroupConfig config, int includedCapacity, int excludedCapacity)
         {
             _groupContainer = groupContainer;
             _poolSet = new PoolSet(poolContainer, includedCapacity, excludedCapacity);
@@ -24,7 +24,7 @@
         /// <summary>
         /// Includes all the entities with a component of type <typeparamref name="TComponent"/>.
         /// </summary>
-        public GroupBuilder Include<TComponent>() where TComponent : struct
+        public IGroupBuilder Include<TComponent>() where TComponent : struct
         {
             _poolSet.Include<TComponent>();
             _typeSet.AddIncluded(typeof(TComponent));
@@ -34,7 +34,7 @@
         /// <summary>
         /// Excludes all the entities without a component of type <typeparamref name="TComponent"/>.
         /// </summary>
-        public GroupBuilder Exclude<TComponent>() where TComponent : struct
+        public IGroupBuilder Exclude<TComponent>() where TComponent : struct
         {
             _poolSet.Exclude<TComponent>();
             _typeSet.AddExcluded(typeof(TComponent));
@@ -42,9 +42,9 @@
         }
 
         /// <summary>
-        /// Returns either the created group or the existing matching group.
+        /// Returns matching group.
         /// </summary>
-        public Group Complete()
+        public IGroup Complete()
         {
             return _groupContainer.Create(this);
         }

@@ -3,15 +3,17 @@
     /// <summary>
     /// A group of entities with matching set of components.
     /// </summary>
-    public sealed class Group : System.IDisposable
+    public sealed class Group : IGroup, IGroupForContainer, System.IDisposable
     {
+        private readonly TypeSet _typeSet;
         private readonly PoolSet _poolSet;
         private SparseSet _sparseSet;
 
-        public Group(GroupConfig config, PoolSet poolSet)
+        public Group(IGroupBuilderCompleted builder)
         {
-            _poolSet = poolSet;
-            _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxGrouped);
+            _typeSet = builder.TypeSet;
+            _poolSet = builder.PoolSet;
+            _sparseSet = new SparseSet(builder.Config.NumberMaxEntities, builder.Config.NumberMaxGrouped);
             FindMatchingEntities();
             SubscribePoolEvents();
         }
@@ -25,11 +27,19 @@
         }
 
         /// <summary>
-        /// Returns the index of the entity in the entities' span.
+        /// Returns the index of the entity in the get entities' span.
         /// </summary>
         public int GetEntityIndex(int entity)
         {
             return _sparseSet.Get(entity);
+        }
+
+        /// <summary>
+        /// Checks matching of types for group.
+        /// </summary>
+        public bool Match(TypeSet typeSet)
+        {
+            return _typeSet.Match(typeSet);
         }
 
         /// <summary>

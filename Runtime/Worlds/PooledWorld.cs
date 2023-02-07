@@ -5,17 +5,26 @@
     /// </summary>
     public sealed class PooledWorld : System.IDisposable
     {
-        public Entities Entities { get; }
-        public Pools Pools { get; }
-        public Groups Groups { get; }
-        public Systems Systems { get; }
+        private readonly IEntitiesForContainer _entities;
+        private readonly IPoolsForContainer _pools;
+        private readonly IGroupsForContainer _groups;
+        private readonly ISystemsForContainer _systems;
+        
+        public IEntities Entities { get; }
+        public IPools Pools { get; }
+        public IGroups Groups { get; }
+        public ISystems Systems { get; }
 
         public PooledWorld(Config config)
         {
-            Entities = new Entities(config.AsEntities());
-            Pools = new Pools(Entities, config.AsPools());
-            Groups = new Groups(Pools, config.AsGroups());
-            Systems = new Systems(config.AsSystems());
+            _entities = new Entities(config.AsEntities());
+            Entities = (IEntities)_entities;
+            _pools = new Pools((IEntitiesForPool)_entities, config.AsPools());
+            Pools = (IPools)_pools;
+            _groups = new Groups((IPoolsForGroup)_pools, config.AsGroups());
+            Groups = (IGroups)_groups;
+            _systems = new Systems(config.AsSystems());
+            Systems = (ISystems)_systems;
         }
 
         /// <summary>
@@ -23,9 +32,9 @@
         /// </summary>
         public void Dispose()
         {
-            Pools.Dispose();
-            Groups.Dispose();
-            Systems.Dispose();
+            _pools.Dispose();
+            _groups.Dispose();
+            _systems.Dispose();
         }
     }
 }

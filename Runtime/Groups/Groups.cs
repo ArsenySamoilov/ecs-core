@@ -3,19 +3,19 @@
     /// <summary>
     /// A container for groups.
     /// </summary>
-    public sealed class Groups : System.IDisposable
+    public sealed class Groups : IGroups, IGroupsForContainer, IGroupsForBuilder, IGroupsForRuiner, System.IDisposable
     {
-        private readonly Pools _poolContainer;
+        private readonly IPoolsForGroup _poolContainer;
         private readonly GroupsConfig _config;
-        private BoxedGroup[] _boxedGroups;
-        private int _boxedGroupCount;
+        private IGroupForContainer[] _groups;
+        private int _groupCount;
 
-        public Groups(Pools poolContainer, GroupsConfig config)
+        public Groups(IPoolsForGroup poolContainer, GroupsConfig config)
         {
             _poolContainer = poolContainer;
             _config = config;
-            _boxedGroups = new BoxedGroup[config.GroupsCapacity];
-            _boxedGroupCount = 0;
+            _groups = new IGroupForContainer[config.GroupsCapacity];
+            _groupCount = 0;
         }
 
         /// <summary>
@@ -25,7 +25,7 @@
         /// <param name="numberMaxGrouped">Specified created group's capacity</param>
         /// <param name="includedCapacity">Specified included count for array's creation</param>
         /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
-        public GroupBuilder Build<TComponent>(int numberMaxGrouped = 0, int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
+        public IGroupBuilder Build<TComponent>(int numberMaxGrouped = 0, int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
         {
             numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
             var config = new GroupConfig(_config.NumberMaxEntities, numberMaxGrouped);
@@ -38,7 +38,7 @@
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
         /// <param name="includedCapacity">Specified included count for array's creation</param>
         /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
-        public GroupRuiner Ruin<TComponent>(int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
+        public IGroupRuiner Ruin<TComponent>(int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
         {
             return new GroupRuiner(this, includedCapacity, excludedCapacity).Include<TComponent>();
         }
@@ -46,48 +46,48 @@
         /// <summary>
         /// Creates a group based on the builder.
         /// </summary>
-        public Group Create(GroupBuilder builder)
+        public IGroup Create(IGroupBuilderCompleted builder)
         {
-            var boxedGroupsAsSpan = new System.Span<BoxedGroup>(_boxedGroups, 0, _boxedGroupCount);
-            foreach (var boxedGroup in boxedGroupsAsSpan)
-                if (boxedGroup.Match(builder.TypeSet))
-                    return boxedGroup.Group;
-            return Add(new BoxedGroup(builder));
+            var groupsAsSpan = new System.Span<IGroupForContainer>(_groups, 0, _groupCount);
+            foreach (var group in groupsAsSpan)
+                if (group.Match(builder.TypeSet))
+                    return (IGroup)group;
+            return Add(new Group(builder));
         }
 
         /// <summary>
-        /// Removes the group based on the builder.
+        /// Removes the group based on the ruiner.
         /// </summary>
-        public Groups Remove(GroupRuiner ruiner)
+        public IGroups Remove(IGroupRuinerCompleted ruiner)
         {
-            var boxedGroupsAsSpan = new System.Span<BoxedGroup>(_boxedGroups, 0, _boxedGroupCount);
-            for (var i = 0; i < _boxedGroupCount; ++i)
-                if (boxedGroupsAsSpan[i].Match(ruiner.TypeSet))
+            var groupsAsSpan = new System.Span<IGroupForContainer>(_groups, 0, _groupCount);
+            for (var i = 0; i < _groupCount; ++i)
+                if (groupsAsSpan[i].Match(ruiner.TypeSet))
                     return Delete(i);
             return this;
         }
 
         /// <summary>
-        /// Disposes all the boxed groups before deleting.
+        /// Disposes all the groups before deleting.
         /// </summary>
         public void Dispose()
         {
-            var boxedGroupsAsSpan = new System.Span<BoxedGroup>(_boxedGroups, 0, _boxedGroupCount);
-            foreach (var boxedGroup in boxedGroupsAsSpan)
-                boxedGroup.Dispose();
+            var groupsAsSpan = new System.Span<IGroupForContainer>(_groups, 0, _groupCount);
+            foreach (var group in groupsAsSpan)
+                group.Dispose();
         }
 
-        private Group Add(BoxedGroup boxedGroup)
+        private IGroup Add(IGroupForContainer group)
         {
-            if (_boxedGroupCount == _boxedGroups.Length)
-                System.Array.Resize(ref _boxedGroups, _boxedGroupCount + 1);
-            _boxedGroups[_boxedGroupCount++] = boxedGroup;
-            return boxedGroup.Group;
+            if (_groupCount == _groups.Length)
+                System.Array.Resize(ref _groups, _groupCount + 1);
+            _groups[_groupCount++] = group;
+            return (IGroup)group;
         }
 
-        private Groups Delete(int index)
+        private IGroups Delete(int index)
         {
-            _boxedGroups[index] = _boxedGroups[--_boxedGroupCount];
+            _groups[index] = _groups[--_groupCount];
             return this;
         }
     }

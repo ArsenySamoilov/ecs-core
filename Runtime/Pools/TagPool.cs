@@ -3,41 +3,49 @@
     /// <summary>
     /// A container for tags of type <typeparamref name="TTag"/>.
     /// </summary>
-    public sealed class TagPool<TTag> : IPool, System.IDisposable where TTag : struct
+    public sealed class TagPool<TTag> : IPool<TTag>, IPoolForContainer, IPoolForGroup, System.IDisposable
+        where TTag : struct
     {
-        private readonly Entities _entityContainer;
+        private readonly IEntitiesForPool _entityContainer;
         private SparseSet _sparseSet;
+        private TTag _returnedTag;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public TagPool(Entities entityContainer, PoolConfig config)
+        public TagPool(IEntitiesForPool entityContainer, PoolConfig config)
         {
             _entityContainer = entityContainer;
             _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
-            SubscribeEntitiesEvents();
+            _returnedTag = new TTag();
+            _entityContainer.Removed += RemoveSafe;
         }
 
         /// <summary>
         /// Creates a tag of type <typeparamref name="TTag"/> for the entity.
+        /// Doesn't check the presence of the tag in the entity.
         /// </summary>
-        public void Create(int entity)
+        public ref TTag Create(int entity, TTag sourceTag = default)
         {
             _sparseSet.Add(entity);
             Created?.Invoke(entity);
+            return ref _returnedTag;
         }
 
         /// <summary>
-        /// Creates a tag of type <typeparamref name="TTag"/> for the entity if it doesn't exist.
+        /// Creates a tag of type <typeparamref name="TTag"/> for the entity.
+        /// Checks the presence of the tag in the entity.
         /// </summary>
-        public void CreateSafe(int entity)
+        public ref TTag CreateSafe(int entity, TTag sourceTag = default)
         {
             if (!Have(entity))
-                Create(entity);
+                return ref Create(entity);
+            return ref _returnedTag;
         }
 
         /// <summary>
         /// Removes the tag of type <typeparamref name="TTag"/> from the entity.
+        /// Doesn't check the presence of the tag in the entity.
         /// </summary>
         public void Remove(int entity)
         {
@@ -46,7 +54,8 @@
         }
 
         /// <summary>
-        /// Removes the tag of type <typeparamref name="TTag"/> from the entity if it exists.
+        /// Removes the tag of type <typeparamref name="TTag"/> from the entity.
+        /// Doesn't check the presence of the tag in the entity.
         /// </summary>
         public void RemoveSafe(int entity)
         {
@@ -55,7 +64,7 @@
         }
 
         /// <summary>
-        /// Checks existence of the tag of type <typeparamref name="TTag"/> in the entity.
+        /// Checks the presence of the tag of type <typeparamref name="TTag"/> in the entity.
         /// </summary>
         public bool Have(int entity)
         {
@@ -63,7 +72,25 @@
         }
 
         /// <summary>
-        /// Returns all the entities from the tag pool.
+        /// Returns the tag of type <typeparamref name="TTag"/> that belongs to the entity.
+        /// Doesn't check the presence of the tag in the entity.
+        /// </summary>
+        public ref TTag Get(int entity)
+        {
+            return ref _returnedTag;
+        }
+
+        /// <summary>
+        /// Returns the tag of type <typeparamref name="TTag"/> that belongs to the entity.
+        /// Checks the presence of the tag in the entity.
+        /// </summary>
+        public ref TTag GetSafe(int entity)
+        {
+            return ref _returnedTag;
+        }
+
+        /// <summary>
+        /// Returns all the entities from the pool.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
@@ -71,29 +98,19 @@
         }
 
         /// <summary>
-        /// Returns the type of the contained tags.
+        /// Checks type matching with <typeparamref name="TTagType"/>
         /// </summary>
-        public System.Type GetComponentType()
+        public bool MatchComponentType<TTagType>() where TTagType : struct
         {
-            return typeof(TTag);
+            return typeof(TTagType) == typeof(TTag);
         }
 
         /// <summary>
-        /// Disposes this tag pool before deleting.
+        /// Disposes this pool before deleting.
         /// </summary>
         public void Dispose()
         {
-            UnsubscribeEntitiesEvents();
-        }
-
-        private void SubscribeEntitiesEvents()
-        {
-            _entityContainer.Removed += RemoveSafe;
-        }
-
-        private void UnsubscribeEntitiesEvents()
-        {
-            _entityContainer.Removed += RemoveSafe;
+            _entityContainer.Removed -= RemoveSafe;
         }
     }
 }

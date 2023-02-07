@@ -5,17 +5,17 @@
     /// </summary>
     public struct PoolSet
     {
-        private readonly Pools _poolContainer;
-        private IPool[] _included;
-        private IPool[] _excluded;
+        private readonly IPoolsForGroup _poolContainer;
+        private IPoolForGroup[] _included;
+        private IPoolForGroup[] _excluded;
         private int _includedCount;
         private int _excludedCount;
 
-        public PoolSet(Pools poolContainer, int includedCapacity, int excludedCapacity)
+        public PoolSet(IPoolsForGroup poolContainer, int includedCapacity, int excludedCapacity)
         {
             _poolContainer = poolContainer;
-            _included = new IPool[includedCapacity];
-            _excluded = new IPool[excludedCapacity];
+            _included = new IPoolForGroup[includedCapacity];
+            _excluded = new IPoolForGroup[excludedCapacity];
             _includedCount = 0;
             _excludedCount = 0;
         }
@@ -53,21 +53,21 @@
                     return false;
             return true;
         }
-        
+
         /// <summary>
         /// Returns included pools as span.
         /// </summary>
-        public readonly System.ReadOnlySpan<IPool> GetIncludedAsSpan()
+        public readonly System.ReadOnlySpan<IPoolForGroup> GetIncludedAsSpan()
         {
-            return new System.ReadOnlySpan<IPool>(_included, 0, _includedCount);
+            return new System.ReadOnlySpan<IPoolForGroup>(_included, 0, _includedCount);
         }
 
         /// <summary>
         /// Returns excluded pools as span.
         /// </summary>
-        public readonly System.ReadOnlySpan<IPool> GetExcludedAsSpan()
+        public readonly System.ReadOnlySpan<IPoolForGroup> GetExcludedAsSpan()
         {
-            return new System.ReadOnlySpan<IPool>(_excluded, 0, _excludedCount);
+            return new System.ReadOnlySpan<IPoolForGroup>(_excluded, 0, _excludedCount);
         }
     }
 }
