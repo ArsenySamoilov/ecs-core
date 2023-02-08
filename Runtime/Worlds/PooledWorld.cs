@@ -32,9 +32,9 @@
         /// </summary>
         public void Dispose()
         {
-            _pools.Dispose();
-            _groups.Dispose();
             _systems.Dispose();
+            _groups.Dispose();
+            _pools.Dispose();
         }
     }
 }
