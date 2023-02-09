@@ -5,6 +5,7 @@
     /// </summary>
     public readonly struct Config
     {
+        public int NumberMaxWorlds { get; }
         public int NumberMaxEntities { get; }
         public int NumberMaxComponents { get; }
         public int NumberMaxGrouped { get; }
@@ -17,6 +18,7 @@
 
         private Config(Options options)
         {
+            NumberMaxWorlds = options.NumberMaxWorlds;
             NumberMaxEntities = options.NumberMaxEntities;
             NumberMaxComponents = options.NumberMaxComponents;
             NumberMaxGrouped = options.NumberMaxGrouped;
@@ -36,6 +38,14 @@
             var configurationOptions = new Options();
             options?.Invoke(configurationOptions);
             return new Config(configurationOptions);
+        }
+
+        /// <summary>
+        /// Returns a config for worlds based on this config.
+        /// </summary>
+        public WorldsConfig AsWorlds()
+        {
+            return new WorldsConfig(this);
         }
 
         /// <summary>
@@ -75,6 +85,7 @@
         /// </summary>
         public sealed class Options
         {
+            public int NumberMaxWorlds { get; set; } = 2;
             public int NumberMaxEntities { get; set; } = 10;
             public int NumberMaxComponents { get; set; } = 10;
             public int NumberMaxGrouped { get; set; } = 10;

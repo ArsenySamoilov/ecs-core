@@ -3,7 +3,7 @@
     /// <summary>
     /// A container for entities, pools, groups and systems.
     /// </summary>
-    public sealed class PooledWorld : System.IDisposable
+    public sealed class PooledWorld : IWorld, IWorldForContainer, System.IDisposable
     {
         private readonly IEntitiesForContainer _entities;
         private readonly IPoolsForContainer _pools;
