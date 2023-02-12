@@ -6,7 +6,7 @@
     public interface IStartUpSystem
     {
         /// <summary>
-        /// Starts up system.
+        /// Starts up the system.
         /// </summary>
         void StartUp();
     }

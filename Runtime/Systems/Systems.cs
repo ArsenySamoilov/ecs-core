@@ -5,15 +5,21 @@
     /// </summary>
     public sealed class Systems : ISystems, ISystemsForContainer, System.IDisposable
     {
+        private readonly IWorld _world;
+
+        private IInitializeSystem[] _initializeSystems;
         private IStartUpSystem[] _startUpSystems;
         private IExecuteSystem[] _executeSystems;
         private System.IDisposable[] _disposableSystems;
+        private int _initializeSystemCount;
         private int _startUpSystemCount;
         private int _executeSystemCount;
         private int _disposableSystemCount;
 
-        public Systems(SystemsConfig config)
+        public Systems(IWorld world, SystemsConfig config)
         {
+            _world = world;
+            _initializeSystems = new IInitializeSystem[ChooseCapacity(config.InitializeSystemsCapacity, config.DefaultSystemsCapacity)];
             _startUpSystems = new IStartUpSystem[ChooseCapacity(config.StartUpSystemsCapacity, config.DefaultSystemsCapacity)];
             _executeSystems = new IExecuteSystem[ChooseCapacity(config.ExecuteSystemsCapacity, config.DefaultSystemsCapacity)];
             _disposableSystems = new System.IDisposable[ChooseCapacity(config.DisposableSystemsCapacity, config.DefaultSystemsCapacity)];
@@ -27,6 +33,8 @@
         /// </summary>
         public ISystems Add<TSystem>(TSystem system) where TSystem : class, ISystem
         {
+            if (system is IInitializeSystem initializeSystem)
+                AddInitializeSystem(initializeSystem);
             if (system is IStartUpSystem startUpSystem)
                 AddStartUpSystem(startUpSystem);
             if (system is IExecuteSystem executeSystem)
@@ -42,6 +50,16 @@
         public ISystems Add<TSystem>() where TSystem : class, ISystem, new()
         {
             return Add(new TSystem());
+        }
+
+        /// <summary>
+        /// Initialize all the required systems.
+        /// </summary>
+        public void Initialize()
+        {
+            var initializeSystemsAsSpan = new System.Span<IInitializeSystem>(_initializeSystems, 0, _initializeSystemCount);
+            foreach (var system in initializeSystemsAsSpan)
+                system.Initialize(_world);
         }
 
         /// <summary>
@@ -77,6 +95,13 @@
         private int ChooseCapacity(int expectedCapacity, int defaultCapacity)
         {
             return expectedCapacity < 0 ? defaultCapacity : expectedCapacity;
+        }
+
+        private void AddInitializeSystem(IInitializeSystem initializeSystem)
+        {
+            if (_initializeSystems.Length == _initializeSystemCount)
+                System.Array.Resize(ref _initializeSystems, _initializeSystemCount + 1);
+            _initializeSystems[_initializeSystemCount++] = initializeSystem;
         }
 
         private void AddStartUpSystem(IStartUpSystem startUpSystem)

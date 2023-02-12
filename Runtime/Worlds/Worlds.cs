@@ -14,7 +14,7 @@
 
         public static event System.Action<Worlds> Constructed;
         public static event System.Action<Worlds> Disposed;
-        
+
         public event System.Action<IWorld, int> Added;
         public event System.Action<IWorld, int> Removed;
 

@@ -16,6 +16,11 @@
         ISystems Add<TSystem>() where TSystem : class, ISystem, new();
 
         /// <summary>
+        /// Initialize all the required systems.
+        /// </summary>
+        void Initialize();
+
+        /// <summary>
         /// Starts up all the required systems.
         /// </summary>
         void StartUp();

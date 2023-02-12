@@ -12,6 +12,7 @@
         public int PoolsCapacity { get; }
         public int GroupsCapacity { get; }
         public int DefaultSystemsCapacity { get; }
+        public int InitializeSystemsCapacity { get; }
         public int StartUpSystemsCapacity { get; }
         public int ExecuteSystemsCapacity { get; }
         public int DisposableSystemsCapacity { get; }
@@ -25,6 +26,7 @@
             PoolsCapacity = options.PoolsCapacity;
             GroupsCapacity = options.GroupsCapacity;
             DefaultSystemsCapacity = options.DefaultSystemsCapacity;
+            InitializeSystemsCapacity = options.InitializeSystemsCapacity;
             StartUpSystemsCapacity = options.StartUpSystemsCapacity;
             ExecuteSystemsCapacity = options.ExecuteSystemsCapacity;
             DisposableSystemsCapacity = options.DisposableSystemsCapacity;
@@ -92,6 +94,7 @@
             public int PoolsCapacity { get; set; } = 1;
             public int GroupsCapacity { get; set; } = 1;
             public int DefaultSystemsCapacity { get; set; } = 1;
+            public int InitializeSystemsCapacity { get; set; } = -1;
             public int StartUpSystemsCapacity { get; set; } = -1;
             public int ExecuteSystemsCapacity { get; set; } = -1;
             public int DisposableSystemsCapacity { get; set; } = -1;

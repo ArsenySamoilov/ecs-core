@@ -23,7 +23,7 @@
             Pools = (IPools)_pools;
             _groups = new Groups((IPoolsForGroup)_pools, config.AsGroups());
             Groups = (IGroups)_groups;
-            _systems = new Systems(config.AsSystems());
+            _systems = new Systems(this, config.AsSystems());
             Systems = (ISystems)_systems;
         }
 
