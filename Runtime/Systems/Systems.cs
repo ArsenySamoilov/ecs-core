@@ -23,9 +23,9 @@
         }
 
         /// <summary>
-        /// Adds the system.
+        /// Adds the system of type <typeparamref name="TSystem"/>.
         /// </summary>
-        public ISystems Add(ISystem system)
+        public ISystems Add<TSystem>(TSystem system) where TSystem : class, ISystem
         {
             if (system is IStartUpSystem startUpSystem)
                 AddStartUpSystem(startUpSystem);
@@ -34,6 +34,14 @@
             if (system is System.IDisposable disposableSystem)
                 AddDisposableSystem(disposableSystem);
             return this;
+        }
+
+        /// <summary>
+        /// Creates and adds a system of type <typeparamref name="TSystem"/>
+        /// </summary>
+        public ISystems Add<TSystem>() where TSystem : class, ISystem, new()
+        {
+            return Add(new TSystem());
         }
 
         /// <summary>
