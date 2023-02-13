@@ -6,9 +6,9 @@
     public interface ISystems
     {
         /// <summary>
-        /// Adds the system of type <typeparamref name="TSystem"/>.
+        /// Adds the system.
         /// </summary>
-        ISystems Add<TSystem>(TSystem system) where TSystem : class, ISystem;
+        ISystems Add(ISystem system);
 
         /// <summary>
         /// Creates and adds a system of type <typeparamref name="TSystem"/>

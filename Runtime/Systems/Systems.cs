@@ -23,15 +23,16 @@
             _startUpSystems = new IStartUpSystem[ChooseCapacity(config.StartUpSystemsCapacity, config.DefaultSystemsCapacity)];
             _executeSystems = new IExecuteSystem[ChooseCapacity(config.ExecuteSystemsCapacity, config.DefaultSystemsCapacity)];
             _disposableSystems = new System.IDisposable[ChooseCapacity(config.DisposableSystemsCapacity, config.DefaultSystemsCapacity)];
+            _initializeSystemCount = 0;
             _startUpSystemCount = 0;
             _executeSystemCount = 0;
             _disposableSystemCount = 0;
         }
 
         /// <summary>
-        /// Adds the system of type <typeparamref name="TSystem"/>.
+        /// Adds the system.
         /// </summary>
-        public ISystems Add<TSystem>(TSystem system) where TSystem : class, ISystem
+        public ISystems Add(ISystem system)
         {
             if (system is IInitializeSystem initializeSystem)
                 AddInitializeSystem(initializeSystem);
