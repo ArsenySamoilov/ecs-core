@@ -3,19 +3,19 @@
     /// <summary>
     /// A container for entities, pools, groups and systems.
     /// </summary>
-    public sealed class PooledWorld : IWorld, IWorldForContainer, System.IDisposable
+    public sealed class World : IWorld, IWorldForContainer, System.IDisposable
     {
         private readonly IEntitiesForContainer _entities;
         private readonly IPoolsForContainer _pools;
         private readonly IGroupsForContainer _groups;
         private readonly ISystemsForContainer _systems;
-        
+
         public IEntities Entities { get; }
         public IPools Pools { get; }
         public IGroups Groups { get; }
         public ISystems Systems { get; }
 
-        public PooledWorld(Config config)
+        public World(Config config)
         {
             _entities = new Entities(config.AsEntities());
             Entities = (IEntities)_entities;
