@@ -5,21 +5,21 @@
     /// </summary>
     public sealed class Worlds : System.IDisposable
     {
+        private readonly Config _config;
         private readonly IWorldForContainer[] _worlds;
         private int _worldCount;
 
         private static Worlds _instance;
 
-        public static bool IsCreated { get; private set; }
-
         public static event System.Action<Worlds> Constructed;
         public static event System.Action<Worlds> Disposed;
 
-        public event System.Action<IWorld, int> Added;
+        public event System.Action<IWorld, int> Created;
         public event System.Action<IWorld, int> Removed;
 
-        private Worlds(in WorldsConfig config)
+        private Worlds(in Config config)
         {
+            _config = config;
             _worlds = new IWorldForContainer[config.NumberMaxWorlds];
         }
 
@@ -27,49 +27,31 @@
         /// Constructs an instance of Worlds using config.
         /// Doesn't check the presence of the instance.
         /// </summary>
-        public static Worlds ConstructInstance(in WorldsConfig config)
+        public static Worlds ConstructInstance(in Config config)
         {
-            IsCreated = true;
             _instance = new Worlds(config);
             Constructed?.Invoke(_instance);
             return _instance;
         }
 
         /// <summary>
-        /// Constructs an instance of Worlds using config.
-        /// Checks the presence of the instance.
+        /// Gets the instance and returns true if the instance exists, false elsewhere.
         /// </summary>
-        public static Worlds ConstructInstanceSafe(in WorldsConfig config)
+        public static bool TryGetInstance(out Worlds worlds)
         {
-            return IsCreated ? _instance : ConstructInstance(config);
+            worlds = _instance;
+            return !ReferenceEquals(_instance, null);
         }
 
         /// <summary>
-        /// Returns current instance of Worlds.
-        /// Doesn't check the presence of the instance.
+        /// Creates the world.
         /// </summary>
-        public static Worlds GetInstance()
+        public IWorld Create()
         {
-            return _instance;
-        }
-
-        /// <summary>
-        /// Returns current instance of Worlds.
-        /// Checks the presence of the instance.
-        /// </summary>
-        public static Worlds GetInstanceSafe()
-        {
-            return IsCreated ? _instance : ConstructInstance(new Config().AsWorlds());
-        }
-
-        /// <summary>
-        /// Adds the world.
-        /// </summary>
-        public Worlds Add(IWorld world)
-        {
-            _worlds[_worldCount++] = (IWorldForContainer)world;
-            Added?.Invoke(world, _worldCount - 1);
-            return this;
+            var world = new World(_config);
+            _worlds[_worldCount++] = world;
+            Created?.Invoke(world, _worldCount - 1);
+            return world;
         }
 
         /// <summary>
@@ -107,7 +89,7 @@
             var worldsAsSpan = new System.Span<IWorldForContainer>(_worlds, 0, _worldCount);
             foreach (var world in worldsAsSpan)
                 world.Dispose();
-            IsCreated = false;
+            _instance = null;
             Disposed?.Invoke(this);
         }
     }
