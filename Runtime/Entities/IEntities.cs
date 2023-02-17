@@ -35,5 +35,25 @@
         /// </summary>
         /// <returns>True if unboxed successfully, false elsewhere.</returns>
         bool TryUnbox(BoxedEntity boxedEntity, out int entity);
+
+        /// <summary>
+        /// An interface for storing entities' container in another container.
+        /// </summary>
+        public interface IForContainer
+        {
+            /// <summary>
+            /// Disposes all the entities before deleting.
+            /// </summary>
+            void Dispose();
+        }
+
+        /// <summary>
+        /// An interface for using entities in an observer.
+        /// </summary>
+        public interface IForObserver
+        {
+            event System.Action<int> Created;
+            event System.Action<int> Removed;
+        }
     }
 }

@@ -29,5 +29,16 @@
         /// Executes all the required systems.
         /// </summary>
         void Execute();
+
+        /// <summary>
+        /// An interface for storing systems' container in another container.
+        /// </summary>
+        public interface IForContainer
+        {
+            /// <summary>
+            /// Disposes all the systems before deleting.
+            /// </summary>
+            void Dispose();
+        }
     }
 }

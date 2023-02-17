@@ -5,15 +5,15 @@
     /// </summary>
     public struct TypeSet
     {
-        private System.Type[] _included;
-        private System.Type[] _excluded;
+        private readonly System.Type[] _included;
+        private readonly System.Type[] _excluded;
         private int _includedCount;
         private int _excludedCount;
 
-        public TypeSet(int includedCapacity, int excludedCapacity)
+        public TypeSet(in GroupConfig? groupConfig = null)
         {
-            _included = new System.Type[includedCapacity];
-            _excluded = new System.Type[excludedCapacity];
+            _included = new System.Type[groupConfig?.NumberMaxIncluded ?? GroupConfig.Options.NumberMaxIncludedDefault];
+            _excluded = new System.Type[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
             _includedCount = 0;
             _excludedCount = 0;
         }
@@ -23,8 +23,6 @@
         /// </summary>
         public void AddIncluded(System.Type type)
         {
-            if (_includedCount == _included.Length)
-                System.Array.Resize(ref _included, _includedCount + 1);
             _included[_includedCount++] = type;
         }
 
@@ -33,8 +31,6 @@
         /// </summary>
         public void AddExcluded(System.Type type)
         {
-            if (_excludedCount == _excluded.Length)
-                System.Array.Resize(ref _excluded, _excludedCount + 1);
             _excluded[_excludedCount++] = type;
         }
 

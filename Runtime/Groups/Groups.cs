@@ -3,18 +3,20 @@
     /// <summary>
     /// A container for groups.
     /// </summary>
-    public sealed class Groups : IGroups, IGroupsForContainer, IGroupsForBuilder, IGroupsForRuiner, System.IDisposable
+    public sealed class Groups : IGroups, IGroups.IForContainer, IGroups.IForBuilder, IGroups.IForRuiner, System.IDisposable
     {
-        private readonly IPoolsForGroup _poolContainer;
-        private readonly GroupsConfig _config;
-        private IGroupForContainer[] _groups;
+        private readonly IPools.IForGroup _poolContainer;
+        private readonly EntitiesConfig? _entitiesConfig;
+        private readonly GroupConfig? _groupConfig;
+        private readonly IGroup.IForContainer[] _groups;
         private int _groupCount;
 
-        public Groups(IPoolsForGroup poolContainer, GroupsConfig config)
+        public Groups(IPools.IForGroup poolContainer, in EntitiesConfig? entitiesConfig = null, in GroupsConfig? groupsConfig = null)
         {
             _poolContainer = poolContainer;
-            _config = config;
-            _groups = new IGroupForContainer[config.GroupsCapacity];
+            _entitiesConfig = entitiesConfig;
+            _groupConfig = groupsConfig?.GroupConfig;
+            _groups = new IGroup.IForContainer[groupsConfig?.NumberMaxGroups ?? GroupsConfig.Options.NumberMaxGroupsDefault];
             _groupCount = 0;
         }
 
@@ -22,47 +24,40 @@
         /// Builds a group.
         /// </summary>
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        /// <param name="numberMaxGrouped">Specified created group's capacity</param>
-        /// <param name="includedCapacity">Specified included count for array's creation</param>
-        /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
-        public IGroupBuilder Build<TComponent>(int numberMaxGrouped = 0, int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
+        public IGroupBuilder Build<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct
         {
-            numberMaxGrouped = numberMaxGrouped < 1 ? _config.NumberMaxGrouped : numberMaxGrouped;
-            var config = new GroupConfig(_config.NumberMaxEntities, numberMaxGrouped);
-            return new GroupBuilder(this, _poolContainer, config, includedCapacity, excludedCapacity).Include<TComponent>();
+            return new GroupBuilder(this, _poolContainer, groupConfig ?? _groupConfig).Include<TComponent>();
         }
 
         /// <summary>
         /// Ruins the group.
         /// </summary>
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        /// <param name="includedCapacity">Specified included count for array's creation</param>
-        /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
-        public IGroupRuiner Ruin<TComponent>(int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct
+        public IGroupRuiner Ruin<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct
         {
-            return new GroupRuiner(this, includedCapacity, excludedCapacity).Include<TComponent>();
+            return new GroupRuiner(this, groupConfig ?? _groupConfig).Include<TComponent>();
         }
 
         /// <summary>
         /// Creates a group based on the builder.
         /// </summary>
-        public IGroup Create(IGroupBuilderCompleted builder)
+        public IGroup Create(in TypeSet typeSet, in PoolSet poolSet, in GroupConfig? groupConfig = null)
         {
-            var groupsAsSpan = new System.Span<IGroupForContainer>(_groups, 0, _groupCount);
+            var groupsAsSpan = new System.Span<IGroup.IForContainer>(_groups, 0, _groupCount);
             foreach (var group in groupsAsSpan)
-                if (group.Match(builder.TypeSet))
+                if (group.Match(typeSet))
                     return (IGroup)group;
-            return Add(new Group(builder));
+            return Add(new Group(typeSet, poolSet, _entitiesConfig, groupConfig ?? _groupConfig));
         }
 
         /// <summary>
         /// Removes the group based on the ruiner.
         /// </summary>
-        public IGroups Remove(IGroupRuinerCompleted ruiner)
+        public IGroups Remove(in TypeSet typeSet)
         {
-            var groupsAsSpan = new System.Span<IGroupForContainer>(_groups, 0, _groupCount);
+            var groupsAsSpan = new System.Span<IGroup.IForContainer>(_groups, 0, _groupCount);
             for (var i = 0; i < _groupCount; ++i)
-                if (groupsAsSpan[i].Match(ruiner.TypeSet))
+                if (groupsAsSpan[i].Match(typeSet))
                     return Delete(i);
             return this;
         }
@@ -72,15 +67,13 @@
         /// </summary>
         public void Dispose()
         {
-            var groupsAsSpan = new System.Span<IGroupForContainer>(_groups, 0, _groupCount);
+            var groupsAsSpan = new System.Span<IGroup.IForContainer>(_groups, 0, _groupCount);
             foreach (var group in groupsAsSpan)
                 group.Dispose();
         }
 
-        private IGroup Add(IGroupForContainer group)
+        private IGroup Add(IGroup.IForContainer group)
         {
-            if (_groupCount == _groups.Length)
-                System.Array.Resize(ref _groups, _groupCount + 1);
             _groups[_groupCount++] = group;
             return (IGroup)group;
         }

@@ -1,17 +1,37 @@
 ﻿namespace SemsamECS.Core
 {
+    /// <summary>
+    /// A config for worlds.
+    /// </summary>
     public readonly struct WorldsConfig
     {
         public int NumberMaxWorlds { get; }
 
-        public WorldsConfig(Config config)
+        public WorldConfig? WorldConfig { get; }
+
+        public WorldsConfig(System.Action<Options> optionsAction)
         {
-            NumberMaxWorlds = config.NumberMaxWorlds;
+            var options = new Options(true);
+            optionsAction?.Invoke(options);
+            NumberMaxWorlds = options.NumberMaxWorlds;
+            WorldConfig = options.WorldConfig;
         }
 
-        public WorldsConfig(int numberMaxWorlds)
+        /// <summary>
+        /// Options for a worlds config.
+        /// </summary>
+        public struct Options
         {
-            NumberMaxWorlds = numberMaxWorlds;
+            public const int NumberMaxWorldsDefault = 2;
+
+            public int NumberMaxWorlds { get; set; }
+            public WorldConfig? WorldConfig { get; set; }
+
+            public Options(bool _)
+            {
+                NumberMaxWorlds = NumberMaxWorldsDefault;
+                WorldConfig = null;
+            }
         }
     }
 }

@@ -14,5 +14,21 @@
         /// Returns the index of the entity in the get entities' span.
         /// </summary>
         int GetEntityIndex(int entity);
+
+        /// <summary>
+        /// An interface for storing groups in a container.
+        /// </summary>
+        public interface IForContainer
+        {
+            /// <summary>
+            /// Checks matching of types for group.
+            /// </summary>
+            bool Match(TypeSet typeSet);
+
+            /// <summary>
+            /// Disposes this group before deleting.
+            /// </summary>
+            void Dispose();
+        }
     }
 }

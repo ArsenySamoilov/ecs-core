@@ -3,20 +3,22 @@
     /// <summary>
     /// A container for tags of type <typeparamref name="TTag"/>.
     /// </summary>
-    public sealed class TagPool<TTag> : IPool<TTag>, IPoolForContainer, IPoolForGroup, System.IDisposable
+    public sealed class TagPool<TTag> : IPool<TTag>, INotGenericPool.IForContainer, INotGenericPool.IForGroup,
+        INotGenericPool.IForObserver, System.IDisposable
         where TTag : struct
     {
-        private readonly IEntitiesForPool _entityContainer;
+        private readonly IEntities.IForObserver _entityContainer;
         private SparseSet _sparseSet;
         private TTag _returnedTag;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public TagPool(IEntitiesForPool entityContainer, PoolConfig config)
+        public TagPool(IEntities.IForObserver entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
         {
             _entityContainer = entityContainer;
-            _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
+            _sparseSet = new SparseSet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
+                poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault);
             _returnedTag = new TTag();
             _entityContainer.Removed += RemoveSafe;
         }

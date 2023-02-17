@@ -3,22 +3,19 @@
     /// <summary>
     /// A builder for a group.
     /// </summary>
-    public sealed class GroupBuilder : IGroupBuilder, IGroupBuilderCompleted
+    public sealed class GroupBuilder : IGroupBuilder
     {
-        private readonly IGroupsForBuilder _groupContainer;
+        private readonly IGroups.IForBuilder _groupContainer;
+        private readonly GroupConfig? _groupConfig;
         private PoolSet _poolSet;
         private TypeSet _typeSet;
 
-        public GroupConfig Config { get; }
-        public PoolSet PoolSet => _poolSet;
-        public TypeSet TypeSet => _typeSet;
-
-        public GroupBuilder(IGroupsForBuilder groupContainer, IPoolsForGroup poolContainer, GroupConfig config, int includedCapacity, int excludedCapacity)
+        public GroupBuilder(IGroups.IForBuilder groupContainer, IPools.IForGroup poolContainer, in GroupConfig? groupConfig = null)
         {
             _groupContainer = groupContainer;
-            _poolSet = new PoolSet(poolContainer, includedCapacity, excludedCapacity);
-            _typeSet = new TypeSet(includedCapacity, excludedCapacity);
-            Config = config;
+            _groupConfig = groupConfig;
+            _poolSet = new PoolSet(poolContainer, groupConfig);
+            _typeSet = new TypeSet(groupConfig);
         }
 
         /// <summary>
@@ -46,7 +43,7 @@
         /// </summary>
         public IGroup Complete()
         {
-            return _groupContainer.Create(this);
+            return _groupContainer.Create(_typeSet, _poolSet, _groupConfig);
         }
     }
 }

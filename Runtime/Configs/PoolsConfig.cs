@@ -5,30 +5,32 @@
     /// </summary>
     public readonly struct PoolsConfig
     {
-        public int NumberMaxEntities { get; }
-        public int NumberMaxComponents { get; }
-        public int PoolsCapacity { get; }
+        public int NumberMaxPools { get; }
+        public PoolConfig? PoolConfig { get; }
 
-        public PoolsConfig(Config config)
+        public PoolsConfig(System.Action<Options> optionsAction)
         {
-            NumberMaxEntities = config.NumberMaxEntities;
-            NumberMaxComponents = config.NumberMaxComponents;
-            PoolsCapacity = config.PoolsCapacity;
-        }
-
-        public PoolsConfig(int numberMaxEntities, int numberMaxComponents, int poolsCapacity)
-        {
-            NumberMaxEntities = numberMaxEntities;
-            NumberMaxComponents = numberMaxComponents;
-            PoolsCapacity = poolsCapacity;
+            var options = new Options(true);
+            optionsAction?.Invoke(options);
+            NumberMaxPools = options.NumberMaxPools;
+            PoolConfig = options.PoolConfig;
         }
 
         /// <summary>
-        /// Returns a config for pool based on this config.
+        /// Options for a pools config.
         /// </summary>
-        public PoolConfig AsPool()
+        public struct Options
         {
-            return new PoolConfig(this);
+            public const int NumberMaxPoolsDefault = 64;
+
+            public int NumberMaxPools { get; set; }
+            public PoolConfig? PoolConfig { get; set; }
+
+            public Options(bool _)
+            {
+                NumberMaxPools = NumberMaxPoolsDefault;
+                PoolConfig = null;
+            }
         }
     }
 }

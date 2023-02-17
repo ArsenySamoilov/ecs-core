@@ -3,67 +3,44 @@
     /// <summary>
     /// A container for worlds.
     /// </summary>
-    public sealed class Worlds : System.IDisposable
+    public sealed class Worlds : IWorlds, IWorlds.IForObserver, System.IDisposable
     {
-        private readonly Config _config;
-        private readonly IWorldForContainer[] _worlds;
+        private readonly WorldConfig? _worldConfig;
+        private readonly IWorld.IForContainer[] _worlds;
         private int _worldCount;
 
-        private static Worlds _instance;
+        public event System.Action<BoxedWorld> Created;
+        public event System.Action<BoxedWorld> Removed;
 
-        public static event System.Action<Worlds> Constructed;
-        public static event System.Action<Worlds> Disposed;
-
-        public event System.Action<IWorld, int> Created;
-        public event System.Action<IWorld, int> Removed;
-
-        private Worlds(in Config config)
+        public Worlds(in WorldsConfig? config = null)
         {
-            _config = config;
-            _worlds = new IWorldForContainer[config.NumberMaxWorlds];
+            _worldConfig = config?.WorldConfig;
+            _worlds = new IWorld.IForContainer[config?.NumberMaxWorlds ?? WorldsConfig.Options.NumberMaxWorldsDefault];
         }
 
         /// <summary>
-        /// Constructs an instance of Worlds using config.
-        /// Doesn't check the presence of the instance.
+        /// Creates a world with configs.
         /// </summary>
-        public static Worlds ConstructInstance(in Config config)
+        public IWorld Create(in WorldConfig? worldConfig = null)
         {
-            _instance = new Worlds(config);
-            Constructed?.Invoke(_instance);
-            return _instance;
-        }
-
-        /// <summary>
-        /// Gets the instance and returns true if the instance exists, false elsewhere.
-        /// </summary>
-        public static bool TryGetInstance(out Worlds worlds)
-        {
-            worlds = _instance;
-            return !ReferenceEquals(_instance, null);
-        }
-
-        /// <summary>
-        /// Creates the world.
-        /// </summary>
-        public IWorld Create()
-        {
-            var world = new World(_config);
+            var world = new World(worldConfig ?? _worldConfig);
             _worlds[_worldCount++] = world;
-            Created?.Invoke(world, _worldCount - 1);
+            Created?.Invoke(new BoxedWorld(world, _worldCount - 1));
             return world;
         }
 
         /// <summary>
-        /// Checks the presence of the world at the index.
+        /// Creates a world in the box with configs.
         /// </summary>
-        public bool Have(int index)
+        public BoxedWorld CreateBoxed(in WorldConfig? worldConfig = null)
         {
-            return index < _worldCount;
+            var index = _worldCount;
+            return new BoxedWorld(Create(worldConfig ?? _worldConfig), index);
         }
 
         /// <summary>
         /// Returns the world by its index.
+        /// Doesn't check the presence of the world.
         /// </summary>
         public IWorld Get(int index)
         {
@@ -71,14 +48,37 @@
         }
 
         /// <summary>
+        /// Tries to get the world by its index.
+        /// </summary>
+        public bool TryGet(int index, out IWorld world)
+        {
+            world = null;
+            if (!(index < _worldCount))
+                return false;
+            world = (IWorld)_worlds[index];
+            return !ReferenceEquals(world, null);
+        }
+
+        /// <summary>
         /// Removes the world by its index.
+        /// Doesn't check the presence of the world.
         /// </summary>
         public void Remove(int index)
         {
             var removedWorld = _worlds[index];
             _worlds[index] = _worlds[--_worldCount];
             removedWorld.Dispose();
-            Removed?.Invoke((IWorld)removedWorld, index);
+            Removed?.Invoke(new BoxedWorld((IWorld)removedWorld, index));
+        }
+
+        /// <summary>
+        /// Removes the world by its index.
+        /// Checks the presence of the world.
+        /// </summary>
+        public void RemoveSafe(int index)
+        {
+            if (index < _worldCount && !ReferenceEquals(_worlds[index], null))
+                Remove(index);
         }
 
         /// <summary>
@@ -86,11 +86,9 @@
         /// </summary>
         public void Dispose()
         {
-            var worldsAsSpan = new System.Span<IWorldForContainer>(_worlds, 0, _worldCount);
+            var worldsAsSpan = new System.Span<IWorld.IForContainer>(_worlds, 0, _worldCount);
             foreach (var world in worldsAsSpan)
                 world.Dispose();
-            _instance = null;
-            Disposed?.Invoke(this);
         }
     }
 }

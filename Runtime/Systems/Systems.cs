@@ -3,26 +3,26 @@
     /// <summary>
     /// A container for systems.
     /// </summary>
-    public sealed class Systems : ISystems, ISystemsForContainer, System.IDisposable
+    public sealed class Systems : ISystems, ISystems.IForContainer, System.IDisposable
     {
         private readonly IWorld _world;
 
-        private IInitializeSystem[] _initializeSystems;
-        private IStartUpSystem[] _startUpSystems;
-        private IExecuteSystem[] _executeSystems;
-        private System.IDisposable[] _disposableSystems;
+        private readonly IInitializeSystem[] _initializeSystems;
+        private readonly IStartUpSystem[] _startUpSystems;
+        private readonly IExecuteSystem[] _executeSystems;
+        private readonly System.IDisposable[] _disposeSystems;
         private int _initializeSystemCount;
         private int _startUpSystemCount;
         private int _executeSystemCount;
         private int _disposableSystemCount;
 
-        public Systems(IWorld world, SystemsConfig config)
+        public Systems(IWorld world, in SystemsConfig? config = null)
         {
             _world = world;
-            _initializeSystems = new IInitializeSystem[ChooseCapacity(config.InitializeSystemsCapacity, config.DefaultSystemsCapacity)];
-            _startUpSystems = new IStartUpSystem[ChooseCapacity(config.StartUpSystemsCapacity, config.DefaultSystemsCapacity)];
-            _executeSystems = new IExecuteSystem[ChooseCapacity(config.ExecuteSystemsCapacity, config.DefaultSystemsCapacity)];
-            _disposableSystems = new System.IDisposable[ChooseCapacity(config.DisposableSystemsCapacity, config.DefaultSystemsCapacity)];
+            _initializeSystems = new IInitializeSystem[config?.NumberMaxInitializeSystems ?? SystemsConfig.Options.NumberMaxInitializeSystemsDefault];
+            _startUpSystems = new IStartUpSystem[config?.NumberMaxStartUpSystems ?? SystemsConfig.Options.NumberMaxStartUpSystemsDefault];
+            _executeSystems = new IExecuteSystem[config?.NumberMaxExecuteSystems ?? SystemsConfig.Options.NumberMaxExecuteSystemsDefault];
+            _disposeSystems = new System.IDisposable[config?.NumberMaxDisposeSystems ?? SystemsConfig.Options.NumberMaxDisposeSystemsDefault];
             _initializeSystemCount = 0;
             _startUpSystemCount = 0;
             _executeSystemCount = 0;
@@ -35,13 +35,13 @@
         public ISystems Add(ISystem system)
         {
             if (system is IInitializeSystem initializeSystem)
-                AddInitializeSystem(initializeSystem);
+                _initializeSystems[_initializeSystemCount++] = initializeSystem;
             if (system is IStartUpSystem startUpSystem)
-                AddStartUpSystem(startUpSystem);
+                _startUpSystems[_startUpSystemCount++] = startUpSystem;
             if (system is IExecuteSystem executeSystem)
-                AddExecuteSystem(executeSystem);
-            if (system is System.IDisposable disposableSystem)
-                AddDisposableSystem(disposableSystem);
+                _executeSystems[_executeSystemCount++] = executeSystem;
+            if (system is System.IDisposable disposeSystem)
+                _disposeSystems[_disposableSystemCount++] = disposeSystem;
             return this;
         }
 
@@ -88,42 +88,9 @@
         /// </summary>
         public void Dispose()
         {
-            var disposableSystemsAsSpan = new System.Span<System.IDisposable>(_disposableSystems, 0, _disposableSystemCount);
-            foreach (var system in disposableSystemsAsSpan)
+            var disposeSystemsAsSpan = new System.Span<System.IDisposable>(_disposeSystems, 0, _disposableSystemCount);
+            foreach (var system in disposeSystemsAsSpan)
                 system.Dispose();
-        }
-
-        private int ChooseCapacity(int expectedCapacity, int defaultCapacity)
-        {
-            return expectedCapacity < 0 ? defaultCapacity : expectedCapacity;
-        }
-
-        private void AddInitializeSystem(IInitializeSystem initializeSystem)
-        {
-            if (_initializeSystems.Length == _initializeSystemCount)
-                System.Array.Resize(ref _initializeSystems, _initializeSystemCount + 1);
-            _initializeSystems[_initializeSystemCount++] = initializeSystem;
-        }
-
-        private void AddStartUpSystem(IStartUpSystem startUpSystem)
-        {
-            if (_startUpSystems.Length == _startUpSystemCount)
-                System.Array.Resize(ref _startUpSystems, _startUpSystemCount + 1);
-            _startUpSystems[_startUpSystemCount++] = startUpSystem;
-        }
-
-        private void AddExecuteSystem(IExecuteSystem executeSystem)
-        {
-            if (_executeSystems.Length == _executeSystemCount)
-                System.Array.Resize(ref _executeSystems, _executeSystemCount + 1);
-            _executeSystems[_executeSystemCount++] = executeSystem;
-        }
-
-        private void AddDisposableSystem(System.IDisposable disposableSystem)
-        {
-            if (_disposableSystems.Length == _disposableSystemCount)
-                System.Array.Resize(ref _disposableSystems, _disposableSystemCount + 1);
-            _disposableSystems[_disposableSystemCount++] = disposableSystem;
         }
     }
 }

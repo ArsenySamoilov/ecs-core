@@ -3,21 +3,23 @@
     /// <summary>
     /// A container for components of type <typeparamref name="TComponent"/>.
     /// </summary>
-    public sealed class ComponentPool<TComponent> : IPool<TComponent>, IPoolForContainer, IPoolForGroup, System.IDisposable
+    public sealed class ComponentPool<TComponent> : IPool<TComponent>, INotGenericPool.IForContainer,
+        INotGenericPool.IForGroup, INotGenericPool.IForObserver, System.IDisposable
         where TComponent : struct
     {
-        private readonly IEntitiesForPool _entityContainer;
+        private readonly IEntities.IForObserver _entityContainer;
         private readonly TComponent[] _denseComponents;
         private SparseSet _sparseSet;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public ComponentPool(IEntitiesForPool entityContainer, PoolConfig config)
+        public ComponentPool(IEntities.IForObserver entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
         {
             _entityContainer = entityContainer;
-            _denseComponents = new TComponent[config.NumberMaxComponents];
-            _sparseSet = new SparseSet(config.NumberMaxEntities, config.NumberMaxComponents);
+            _denseComponents = new TComponent[poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault];
+            _sparseSet = new SparseSet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
+                poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault);
             _entityContainer.Removed += RemoveSafe;
         }
 

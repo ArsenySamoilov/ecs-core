@@ -5,17 +5,17 @@
     /// </summary>
     public struct PoolSet
     {
-        private readonly IPoolsForGroup _poolContainer;
-        private IPoolForGroup[] _included;
-        private IPoolForGroup[] _excluded;
+        private readonly IPools.IForGroup _poolContainer;
+        private readonly INotGenericPool.IForGroup[] _included;
+        private readonly INotGenericPool.IForGroup[] _excluded;
         private int _includedCount;
         private int _excludedCount;
 
-        public PoolSet(IPoolsForGroup poolContainer, int includedCapacity, int excludedCapacity)
+        public PoolSet(IPools.IForGroup poolContainer, in GroupConfig? groupConfig = null)
         {
             _poolContainer = poolContainer;
-            _included = new IPoolForGroup[includedCapacity];
-            _excluded = new IPoolForGroup[excludedCapacity];
+            _included = new INotGenericPool.IForGroup[groupConfig?.NumberMaxIncluded ?? GroupConfig.Options.NumberMaxIncludedDefault];
+            _excluded = new INotGenericPool.IForGroup[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
             _includedCount = 0;
             _excludedCount = 0;
         }
@@ -25,8 +25,6 @@
         /// </summary>
         public void Include<TComponent>() where TComponent : struct
         {
-            if (_includedCount == _included.Length)
-                System.Array.Resize(ref _included, _includedCount + 1);
             _included[_includedCount++] = _poolContainer.Get<TComponent>();
         }
 
@@ -35,8 +33,6 @@
         /// </summary>
         public void Exclude<TComponent>() where TComponent : struct
         {
-            if (_excludedCount == _excluded.Length)
-                System.Array.Resize(ref _excluded, _excludedCount + 1);
             _excluded[_excludedCount++] = _poolContainer.Get<TComponent>();
         }
 
@@ -57,17 +53,17 @@
         /// <summary>
         /// Returns included pools as span.
         /// </summary>
-        public readonly System.ReadOnlySpan<IPoolForGroup> GetIncludedAsSpan()
+        public readonly System.ReadOnlySpan<INotGenericPool.IForGroup> GetIncludedAsSpan()
         {
-            return new System.ReadOnlySpan<IPoolForGroup>(_included, 0, _includedCount);
+            return new System.ReadOnlySpan<INotGenericPool.IForGroup>(_included, 0, _includedCount);
         }
 
         /// <summary>
         /// Returns excluded pools as span.
         /// </summary>
-        public readonly System.ReadOnlySpan<IPoolForGroup> GetExcludedAsSpan()
+        public readonly System.ReadOnlySpan<INotGenericPool.IForGroup> GetExcludedAsSpan()
         {
-            return new System.ReadOnlySpan<IPoolForGroup>(_excluded, 0, _excludedCount);
+            return new System.ReadOnlySpan<INotGenericPool.IForGroup>(_excluded, 0, _excludedCount);
         }
     }
 }

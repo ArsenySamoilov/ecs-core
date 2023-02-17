@@ -5,30 +5,32 @@
     /// </summary>
     public readonly struct GroupsConfig
     {
-        public int NumberMaxEntities { get; }
-        public int NumberMaxGrouped { get; }
-        public int GroupsCapacity { get; }
+        public int NumberMaxGroups { get; }
+        public GroupConfig? GroupConfig { get; }
 
-        public GroupsConfig(Config config)
+        public GroupsConfig(System.Action<Options> optionsAction)
         {
-            NumberMaxEntities = config.NumberMaxEntities;
-            NumberMaxGrouped = config.NumberMaxGrouped;
-            GroupsCapacity = config.GroupsCapacity;
-        }
-
-        public GroupsConfig(int numberMaxEntities, int numberMaxGrouped, int groupsCapacity)
-        {
-            NumberMaxEntities = numberMaxEntities;
-            NumberMaxGrouped = numberMaxGrouped;
-            GroupsCapacity = groupsCapacity;
+            var options = new Options(true);
+            optionsAction?.Invoke(options);
+            NumberMaxGroups = options.NumberMaxGroups;
+            GroupConfig = options.GroupConfig;
         }
 
         /// <summary>
-        /// Returns a config for group based on this config.
+        /// Options for a worlds config.
         /// </summary>
-        public GroupConfig AsGroup()
+        public struct Options
         {
-            return new GroupConfig(this);
+            public const int NumberMaxGroupsDefault = 128;
+
+            public int NumberMaxGroups { get; set; }
+            public GroupConfig? GroupConfig { get; set; }
+
+            public Options(bool _)
+            {
+                NumberMaxGroups = NumberMaxGroupsDefault;
+                GroupConfig = null;
+            }
         }
     }
 }

@@ -9,17 +9,45 @@
         /// Builds a group.
         /// </summary>
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        /// <param name="numberMaxGrouped">Specified created group's capacity</param>
-        /// <param name="includedCapacity">Specified included count for array's creation</param>
-        /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
-        IGroupBuilder Build<TComponent>(int numberMaxGrouped = 0, int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct;
+        IGroupBuilder Build<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct;
 
         /// <summary>
         /// Ruins the group.
         /// </summary>
         /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        /// <param name="includedCapacity">Specified included count for array's creation</param>
-        /// <param name="excludedCapacity">Specified excluded count for array's creation</param>
-        IGroupRuiner Ruin<TComponent>(int includedCapacity = 1, int excludedCapacity = 0) where TComponent : struct;
+        IGroupRuiner Ruin<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct;
+
+        /// <summary>
+        /// An interface for storing groups' container in another container.
+        /// </summary>
+        public interface IForContainer
+        {
+            /// <summary>
+            /// Disposes all the groups before deleting.
+            /// </summary>
+            void Dispose();
+        }
+
+        /// <summary>
+        /// An interface for using groups in a builder.
+        /// </summary>
+        public interface IForBuilder
+        {
+            /// <summary>
+            /// Creates a group based on the builder.
+            /// </summary>
+            IGroup Create(in TypeSet typeSet, in PoolSet poolSet, in GroupConfig? groupConfig = null);
+        }
+
+        /// <summary>
+        /// An interface for using groups in a ruiner.
+        /// </summary>
+        public interface IForRuiner
+        {
+            /// <summary>
+            /// Removes the group based on the ruiner.
+            /// </summary>
+            IGroups Remove(in TypeSet typeSet);
+        }
     }
 }

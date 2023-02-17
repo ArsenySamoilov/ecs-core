@@ -1,20 +1,42 @@
 ﻿namespace SemsamECS.Core
 {
+    /// <summary>
+    /// A config for a group.
+    /// </summary>
     public readonly struct GroupConfig
     {
-        public int NumberMaxEntities { get; }
+        public int NumberMaxIncluded { get; }
+        public int NumberMaxExcluded { get; }
         public int NumberMaxGrouped { get; }
 
-        public GroupConfig(GroupsConfig config)
+        public GroupConfig(System.Action<Options> optionsAction)
         {
-            NumberMaxEntities = config.NumberMaxEntities;
-            NumberMaxGrouped = config.NumberMaxGrouped;
+            var option = new Options(true);
+            optionsAction?.Invoke(option);
+            NumberMaxIncluded = option.NumberMaxIncluded;
+            NumberMaxExcluded = option.NumberMaxExcluded;
+            NumberMaxGrouped = option.NumberMaxGrouped;
         }
 
-        public GroupConfig(int numberMaxEntities, int numberMaxGrouped)
+        /// <summary>
+        /// Options for a group config.
+        /// </summary>
+        public struct Options
         {
-            NumberMaxEntities = numberMaxEntities;
-            NumberMaxGrouped = numberMaxGrouped;
+            public const int NumberMaxIncludedDefault = 8;
+            public const int NumberMaxExcludedDefault = 8;
+            public const int NumberMaxGroupedDefault = 128;
+
+            public int NumberMaxIncluded { get; set; }
+            public int NumberMaxExcluded { get; set; }
+            public int NumberMaxGrouped { get; set; }
+
+            public Options(bool _)
+            {
+                NumberMaxIncluded = NumberMaxIncludedDefault;
+                NumberMaxExcluded = NumberMaxExcludedDefault;
+                NumberMaxGrouped = NumberMaxGroupedDefault;
+            }
         }
     }
 }

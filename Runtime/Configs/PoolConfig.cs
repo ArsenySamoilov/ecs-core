@@ -1,20 +1,32 @@
 ﻿namespace SemsamECS.Core
 {
+    /// <summary>
+    /// A config for a pool.
+    /// </summary>
     public readonly struct PoolConfig
     {
-        public int NumberMaxEntities { get; }
         public int NumberMaxComponents { get; }
 
-        public PoolConfig(PoolsConfig config)
+        public PoolConfig(System.Action<Options> optionsAction)
         {
-            NumberMaxEntities = config.NumberMaxEntities;
-            NumberMaxComponents = config.NumberMaxComponents;
+            var options = new Options(true);
+            optionsAction?.Invoke(options);
+            NumberMaxComponents = options.NumberMaxComponents;
         }
 
-        public PoolConfig(int numberMaxEntities, int numberMaxComponents)
+        /// <summary>
+        /// Options for a pool config.
+        /// </summary>
+        public struct Options
         {
-            NumberMaxEntities = numberMaxEntities;
-            NumberMaxComponents = numberMaxComponents;
+            public const int NumberMaxComponentsDefault = 512;
+
+            public int NumberMaxComponents { get; set; }
+
+            public Options(bool _)
+            {
+                NumberMaxComponents = NumberMaxComponentsDefault;
+            }
         }
     }
 }

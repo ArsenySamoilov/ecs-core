@@ -3,17 +3,15 @@
     /// <summary>
     /// A ruiner for a group.
     /// </summary>
-    public sealed class GroupRuiner : IGroupRuiner, IGroupRuinerCompleted
+    public sealed class GroupRuiner : IGroupRuiner
     {
-        private readonly IGroupsForRuiner _groupContainer;
+        private readonly IGroups.IForRuiner _groupContainer;
         private TypeSet _typeSet;
 
-        public TypeSet TypeSet => _typeSet;
-
-        public GroupRuiner(IGroupsForRuiner groupContainer, int includedCapacity, int excludedCapacity)
+        public GroupRuiner(IGroups.IForRuiner groupContainer, in GroupConfig? groupConfig = null)
         {
             _groupContainer = groupContainer;
-            _typeSet = new TypeSet(includedCapacity, excludedCapacity);
+            _typeSet = new TypeSet(groupConfig);
         }
 
         /// <summary>
@@ -39,7 +37,7 @@
         /// </summary>
         public IGroups Complete()
         {
-            return _groupContainer.Remove(this);
+            return _groupContainer.Remove(_typeSet);
         }
     }
 }
