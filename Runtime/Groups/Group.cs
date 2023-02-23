@@ -1,19 +1,19 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A group of entities with matching set of components.
+    /// A group of entities with a matching set of components.
     /// </summary>
-    public sealed class Group : IGroup, IGroup.IForContainer, System.IDisposable
+    public sealed class Group : IGroup, System.IDisposable
     {
         private readonly TypeSet _typeSet;
         private readonly PoolSet _poolSet;
-        private SparseSet _sparseSet;
+        private readonly EntitySet _entitySet;
 
         public Group(in TypeSet typeSet, in PoolSet poolSet, in EntitiesConfig? entitiesConfig = null, in GroupConfig? groupConfig = null)
         {
             _typeSet = typeSet;
             _poolSet = poolSet;
-            _sparseSet = new SparseSet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
+            _entitySet = new EntitySet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
                 groupConfig?.NumberMaxGrouped ?? GroupConfig.Options.NumberMaxGroupedDefault);
             FindMatchingEntities();
             SubscribePoolEvents();
@@ -24,19 +24,19 @@
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
-            return _sparseSet.GetEntities();
+            return _entitySet.GetEntities();
         }
 
         /// <summary>
-        /// Returns the index of the entity in the get entities' span.
+        /// Returns an index of the entity in the entity span returned by <see cref="GetEntities"/>.
         /// </summary>
         public int GetEntityIndex(int entity)
         {
-            return _sparseSet.Get(entity);
+            return _entitySet.Get(entity);
         }
 
         /// <summary>
-        /// Checks matching of types for group.
+        /// Checks the matching set of components with this group's set of components.
         /// </summary>
         public bool Match(TypeSet typeSet)
         {
@@ -53,20 +53,19 @@
 
         private void FindMatchingEntities()
         {
-            var entities = _poolSet.GetIncludedAsSpan()[0].GetEntities();
-            foreach (var entity in entities)
+            foreach (var entity in _poolSet.GetIncluded()[0].GetEntities())
                 AttemptIncludeEntity(entity);
         }
 
         private void SubscribePoolEvents()
         {
-            foreach (var pool in _poolSet.GetIncludedAsSpan())
+            foreach (var pool in _poolSet.GetIncluded())
             {
                 pool.Created += AttemptIncludeEntity;
                 pool.Removed += AttemptExcludeEntity;
             }
 
-            foreach (var pool in _poolSet.GetExcludedAsSpan())
+            foreach (var pool in _poolSet.GetExcluded())
             {
                 pool.Created += AttemptExcludeEntity;
                 pool.Removed += AttemptIncludeEntity;
@@ -75,13 +74,13 @@
 
         private void UnsubscribePoolEvents()
         {
-            foreach (var pool in _poolSet.GetIncludedAsSpan())
+            foreach (var pool in _poolSet.GetIncluded())
             {
                 pool.Created -= AttemptIncludeEntity;
                 pool.Removed -= AttemptExcludeEntity;
             }
 
-            foreach (var pool in _poolSet.GetExcludedAsSpan())
+            foreach (var pool in _poolSet.GetExcluded())
             {
                 pool.Created -= AttemptExcludeEntity;
                 pool.Removed -= AttemptIncludeEntity;
@@ -91,13 +90,13 @@
         private void AttemptIncludeEntity(int entity)
         {
             if (_poolSet.MatchEntity(entity))
-                _sparseSet.Add(entity);
+                _entitySet.Add(entity);
         }
 
         private void AttemptExcludeEntity(int entity)
         {
-            if (_sparseSet.Have(entity))
-                _sparseSet.Delete(entity);
+            if (_entitySet.Have(entity))
+                _entitySet.Delete(entity);
         }
     }
 }

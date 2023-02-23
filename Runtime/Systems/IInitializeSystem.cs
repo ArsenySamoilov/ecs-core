@@ -1,12 +1,12 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface for systems with an initialization.
+    /// An interface of a system with initialization logic.
     /// </summary>
     public interface IInitializeSystem
     {
         /// <summary>
-        /// Initializes the system.
+        /// Initializes this system.
         /// </summary>
         void Initialize(IWorld world);
     }

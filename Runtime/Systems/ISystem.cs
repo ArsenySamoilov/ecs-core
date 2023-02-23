@@ -1,7 +1,9 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface required for all systems.
+    /// An interface of any system.
     /// </summary>
-    public interface ISystem { }
+    public interface ISystem
+    {
+    }
 }

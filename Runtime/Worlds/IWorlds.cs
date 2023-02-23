@@ -1,50 +1,36 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface for a container for worlds.
+    /// An interface of a world container.
     /// </summary>
     public interface IWorlds
     {
         /// <summary>
-        /// Creates a world based on the builder.
+        /// Creates a world and boxes it.
         /// </summary>
-        IWorld Create(in WorldConfig? worldConfig = null);
+        BoxedWorld Create(in WorldConfig? worldConfig = null);
 
         /// <summary>
-        /// Creates a world in the box based on the builder.
-        /// </summary>
-        BoxedWorld CreateBoxed(in WorldConfig? worldConfig = null);
-
-        /// <summary>
-        /// Returns world by its index.
-        /// Doesn't check the presence of the world.
-        /// </summary>
-        IWorld Get(int index);
-
-        /// <summary>
-        /// Returns world by its index if it exists.
-        /// </summary>
-        bool TryGet(int index, out IWorld world);
-
-        /// <summary>
-        /// Removes the world by its index.
+        /// Removes the world.
         /// Doesn't check the presence of the world.
         /// </summary>
         void Remove(int index);
 
         /// <summary>
-        /// Removes the world by its index.
-        /// Checks the presence of the world.
+        /// Returns all the worlds contained.
         /// </summary>
-        void RemoveSafe(int index);
+        System.ReadOnlySpan<IWorld> GetWorlds();
 
         /// <summary>
-        /// An interface for using worlds in an observer.
+        /// Tries to box the world.
         /// </summary>
-        public interface IForObserver
-        {
-            event System.Action<BoxedWorld> Created;
-            event System.Action<BoxedWorld> Removed;
-        }
+        /// <returns>True if the world has boxed successfully, false elsewhere.</returns>
+        bool TryBox(IWorld world, out BoxedWorld boxedWorld);
+
+        /// <summary>
+        /// Tries to unbox the boxed world.
+        /// </summary>
+        /// <returns>True if the boxed world has unboxed successfully, false elsewhere.</returns>
+        bool TryUnbox(BoxedWorld boxedWorld, out IWorld world);
     }
 }

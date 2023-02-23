@@ -1,110 +1,80 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A container for tags of type <typeparamref name="TTag"/>.
+    /// A tag container.
     /// </summary>
-    public sealed class TagPool<TTag> : IPool<TTag>, INotGenericPool.IForContainer, INotGenericPool.IForGroup,
-        INotGenericPool.IForObserver, System.IDisposable
+    /// <typeparam name="TTag">The type of tags contained.</typeparam>
+    public sealed class TagPool<TTag> : IPool<TTag>, INotGenericPool, System.IDisposable
         where TTag : struct
     {
-        private readonly IEntities.IForObserver _entityContainer;
-        private SparseSet _sparseSet;
-        private TTag _returnedTag;
+        private readonly Entities _entityContainer;
+        private readonly EntitySet _entitySet;
+        private readonly TTag[] _denseTag;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public TagPool(IEntities.IForObserver entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
+        public TagPool(Entities entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
         {
             _entityContainer = entityContainer;
-            _sparseSet = new SparseSet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
+            _entitySet = new EntitySet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
                 poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault);
-            _returnedTag = new TTag();
-            _entityContainer.Removed += RemoveSafe;
+            _denseTag = new TTag[1];
+            _entityContainer.Removed += OnEntityRemoved;
         }
 
         /// <summary>
-        /// Creates a tag of type <typeparamref name="TTag"/> for the entity.
-        /// Doesn't check the presence of the tag in the entity.
+        /// Creates a tag for the entity.
+        /// Doesn't check the presence of the tag.
         /// </summary>
         public ref TTag Create(int entity, TTag sourceTag = default)
         {
-            _sparseSet.Add(entity);
+            _entitySet.Add(entity);
             Created?.Invoke(entity);
-            return ref _returnedTag;
+            return ref _denseTag[0];
         }
 
         /// <summary>
-        /// Creates a tag of type <typeparamref name="TTag"/> for the entity.
-        /// Checks the presence of the tag in the entity.
-        /// </summary>
-        public ref TTag CreateSafe(int entity, TTag sourceTag = default)
-        {
-            if (!Have(entity))
-                return ref Create(entity);
-            return ref _returnedTag;
-        }
-
-        /// <summary>
-        /// Removes the tag of type <typeparamref name="TTag"/> from the entity.
-        /// Doesn't check the presence of the tag in the entity.
+        /// Removes the tag from the entity.
+        /// Doesn't check the presence of the tag.
         /// </summary>
         public void Remove(int entity)
         {
-            _sparseSet.Delete(entity);
+            _entitySet.Delete(entity);
             Removed?.Invoke(entity);
         }
 
         /// <summary>
-        /// Removes the tag of type <typeparamref name="TTag"/> from the entity.
-        /// Doesn't check the presence of the tag in the entity.
-        /// </summary>
-        public void RemoveSafe(int entity)
-        {
-            if (Have(entity))
-                Remove(entity);
-        }
-
-        /// <summary>
-        /// Checks the presence of the tag of type <typeparamref name="TTag"/> in the entity.
+        /// Checks the presence of the tag for the entity.
         /// </summary>
         public bool Have(int entity)
         {
-            return _sparseSet.Have(entity);
+            return _entitySet.Have(entity);
         }
 
         /// <summary>
-        /// Returns the tag of type <typeparamref name="TTag"/> that belongs to the entity.
-        /// Doesn't check the presence of the tag in the entity.
+        /// Returns the tag for the entity.
+        /// Doesn't check the presence of the tag.
         /// </summary>
         public ref TTag Get(int entity)
         {
-            return ref _returnedTag;
+            return ref _denseTag[0];
         }
 
         /// <summary>
-        /// Returns the tag of type <typeparamref name="TTag"/> that belongs to the entity.
-        /// Checks the presence of the tag in the entity.
-        /// </summary>
-        public ref TTag GetSafe(int entity)
-        {
-            return ref _returnedTag;
-        }
-
-        /// <summary>
-        /// Returns all the entities from the pool.
+        /// Returns all the entities with tags contained.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
-            return _sparseSet.GetEntities();
+            return _entitySet.GetEntities();
         }
 
         /// <summary>
-        /// Checks type matching with <typeparamref name="TTagType"/>
+        /// Returns the only tag contained.
         /// </summary>
-        public bool MatchComponentType<TTagType>() where TTagType : struct
+        public System.ReadOnlySpan<TTag> GetComponents()
         {
-            return typeof(TTagType) == typeof(TTag);
+            return new System.ReadOnlySpan<TTag>(_denseTag);
         }
 
         /// <summary>
@@ -112,7 +82,13 @@
         /// </summary>
         public void Dispose()
         {
-            _entityContainer.Removed -= RemoveSafe;
+            _entityContainer.Removed -= OnEntityRemoved;
+        }
+
+        private void OnEntityRemoved(int entity)
+        {
+            if (Have(entity))
+                Remove(entity);
         }
     }
 }

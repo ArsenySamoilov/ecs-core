@@ -1,76 +1,67 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A type set for storing included and excluded types separately.
+    /// A set for included and excluded types separated storage.
     /// </summary>
-    public struct TypeSet
+    public sealed class TypeSet
     {
-        private readonly System.Type[] _included;
-        private readonly System.Type[] _excluded;
+        private readonly int[] _included;
+        private readonly int[] _excluded;
         private int _includedCount;
         private int _excludedCount;
+        private int _hash;
 
         public TypeSet(in GroupConfig? groupConfig = null)
         {
-            _included = new System.Type[groupConfig?.NumberMaxIncluded ?? GroupConfig.Options.NumberMaxIncludedDefault];
-            _excluded = new System.Type[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
+            _included = new int[groupConfig?.NumberMaxIncluded ?? GroupConfig.Options.NumberMaxIncludedDefault];
+            _excluded = new int[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
             _includedCount = 0;
             _excludedCount = 0;
+            _hash = 0;
         }
 
         /// <summary>
         /// Includes the type.
         /// </summary>
-        public void AddIncluded(System.Type type)
+        public void Include<TComponent>() where TComponent : struct
         {
-            _included[_includedCount++] = type;
+            var includedAsSpan = new System.ReadOnlySpan<int>(_included, 0, _includedCount);
+            int i, componentId = ComponentId.For<TComponent>.Get();
+            for (i = _includedCount - 1; i > -1 && componentId < includedAsSpan[i]; --i)
+                _included[i + 1] = _included[i];
+            _included[i + 1] = componentId;
+            ++_includedCount;
+            _hash += (_includedCount + _excludedCount) * componentId;
         }
 
         /// <summary>
         /// Excludes the type.
         /// </summary>
-        public void AddExcluded(System.Type type)
+        public void Exclude<TComponent>() where TComponent : struct
         {
-            _excluded[_excludedCount++] = type;
+            var excludedAsSpan = new System.ReadOnlySpan<int>(_excluded, 0, _excludedCount);
+            int i, componentId = ComponentId.For<TComponent>.Get();
+            for (i = _excludedCount - 1; i > -1 && componentId < excludedAsSpan[i]; --i)
+                _excluded[i + 1] = _excluded[i];
+            _excluded[i + 1] = componentId;
+            ++_excludedCount;
+            _hash += (_includedCount + _excludedCount) * componentId * 2;
         }
 
         /// <summary>
-        /// Checks matching of types for set.
+        /// Checks type matching with another set.
         /// </summary>
-        public readonly bool Match(TypeSet typeSet)
+        public bool Match(TypeSet typeSet)
         {
-            var includedAsSpan = GetIncludedAsSpan();
-            var excludedAsSpan = GetExcludedAsSpan();
-            var typeSetIncludedAsSpan = typeSet.GetIncludedAsSpan();
-            var typeSetExcludedAsSpan = typeSet.GetExcludedAsSpan();
-
-            if (typeSetIncludedAsSpan.Length != includedAsSpan.Length || typeSetExcludedAsSpan.Length != excludedAsSpan.Length)
+            if (typeSet._hash != _hash || typeSet._includedCount != _includedCount || typeSet._excludedCount != _excludedCount)
                 return false;
-            foreach (var type in typeSetIncludedAsSpan)
-                if (!ContainType(includedAsSpan, type))
+            for (var i = _includedCount - 1; i > -1; --i)
+                if (_included[i] != typeSet._included[i])
                     return false;
-            foreach (var type in typeSetExcludedAsSpan)
-                if (!ContainType(excludedAsSpan, type))
+            for (var i = _excludedCount - 1; i > -1; --i)
+                if (_excluded[i] != typeSet._excluded[i])
                     return false;
             return true;
-        }
-
-        private readonly System.ReadOnlySpan<System.Type> GetIncludedAsSpan()
-        {
-            return new System.ReadOnlySpan<System.Type>(_included, 0, _includedCount);
-        }
-
-        private readonly System.ReadOnlySpan<System.Type> GetExcludedAsSpan()
-        {
-            return new System.ReadOnlySpan<System.Type>(_excluded, 0, _excludedCount);
-        }
-
-        private static bool ContainType(System.ReadOnlySpan<System.Type> types, System.Type targetType)
-        {
-            foreach (var type in types)
-                if (type == targetType)
-                    return true;
-            return false;
         }
     }
 }

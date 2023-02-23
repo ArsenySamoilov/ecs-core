@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface of a container for systems.
+    /// An interface of a system container.
     /// </summary>
     public interface ISystems
     {
@@ -11,34 +11,24 @@
         ISystems Add(ISystem system);
 
         /// <summary>
-        /// Creates and adds a system of type <typeparamref name="TSystem"/>
+        /// Adds a system.
         /// </summary>
+        /// <typeparam name="TSystem">The type of the system.</typeparam>
         ISystems Add<TSystem>() where TSystem : class, ISystem, new();
 
         /// <summary>
-        /// Initialize all the required systems.
+        /// Initializes all the systems.
         /// </summary>
         void Initialize();
 
         /// <summary>
-        /// Starts up all the required systems.
+        /// Starts up all the systems.
         /// </summary>
         void StartUp();
 
         /// <summary>
-        /// Executes all the required systems.
+        /// Executes all the systems.
         /// </summary>
         void Execute();
-
-        /// <summary>
-        /// An interface for storing systems' container in another container.
-        /// </summary>
-        public interface IForContainer
-        {
-            /// <summary>
-            /// Disposes all the systems before deleting.
-            /// </summary>
-            void Dispose();
-        }
     }
 }

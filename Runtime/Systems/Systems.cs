@@ -1,16 +1,18 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A container for systems.
+    /// A system container.
     /// </summary>
-    public sealed class Systems : ISystems, ISystems.IForContainer, System.IDisposable
+    public sealed class Systems : ISystems, System.IDisposable
     {
         private readonly IWorld _world;
 
+        private readonly ISystem[] _systems;
         private readonly IInitializeSystem[] _initializeSystems;
         private readonly IStartUpSystem[] _startUpSystems;
         private readonly IExecuteSystem[] _executeSystems;
         private readonly System.IDisposable[] _disposeSystems;
+        private int _systemCount;
         private int _initializeSystemCount;
         private int _startUpSystemCount;
         private int _executeSystemCount;
@@ -19,10 +21,12 @@
         public Systems(IWorld world, in SystemsConfig? config = null)
         {
             _world = world;
+            _systems = new ISystem[config?.NumberMaxSystems ?? SystemsConfig.Options.NumberMaxSystemsDefault];
             _initializeSystems = new IInitializeSystem[config?.NumberMaxInitializeSystems ?? SystemsConfig.Options.NumberMaxInitializeSystemsDefault];
             _startUpSystems = new IStartUpSystem[config?.NumberMaxStartUpSystems ?? SystemsConfig.Options.NumberMaxStartUpSystemsDefault];
             _executeSystems = new IExecuteSystem[config?.NumberMaxExecuteSystems ?? SystemsConfig.Options.NumberMaxExecuteSystemsDefault];
             _disposeSystems = new System.IDisposable[config?.NumberMaxDisposeSystems ?? SystemsConfig.Options.NumberMaxDisposeSystemsDefault];
+            _systemCount = 0;
             _initializeSystemCount = 0;
             _startUpSystemCount = 0;
             _executeSystemCount = 0;
@@ -34,6 +38,7 @@
         /// </summary>
         public ISystems Add(ISystem system)
         {
+            _systems[_systemCount++] = system;
             if (system is IInitializeSystem initializeSystem)
                 _initializeSystems[_initializeSystemCount++] = initializeSystem;
             if (system is IStartUpSystem startUpSystem)
@@ -46,15 +51,16 @@
         }
 
         /// <summary>
-        /// Creates and adds a system of type <typeparamref name="TSystem"/>
+        /// Adds a system.
         /// </summary>
+        /// <typeparam name="TSystem">The type of the system.</typeparam>
         public ISystems Add<TSystem>() where TSystem : class, ISystem, new()
         {
             return Add(new TSystem());
         }
 
         /// <summary>
-        /// Initialize all the required systems.
+        /// Initializes all the systems.
         /// </summary>
         public void Initialize()
         {
@@ -64,7 +70,7 @@
         }
 
         /// <summary>
-        /// Starts up all the required systems.
+        /// Starts up all the systems.
         /// </summary>
         public void StartUp()
         {
@@ -74,13 +80,21 @@
         }
 
         /// <summary>
-        /// Executes all the required systems.
+        /// Executes all the systems.
         /// </summary>
         public void Execute()
         {
             var executeSystemsAsSpan = new System.Span<IExecuteSystem>(_executeSystems, 0, _executeSystemCount);
             foreach (var system in executeSystemsAsSpan)
                 system.Execute();
+        }
+
+        /// <summary>
+        /// Returns all the systems contained.
+        /// </summary>
+        public System.ReadOnlySpan<ISystem> GetSystems()
+        {
+            return new System.ReadOnlySpan<ISystem>(_systems, 0, _systemCount);
         }
 
         /// <summary>

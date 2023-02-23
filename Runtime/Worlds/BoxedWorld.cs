@@ -1,7 +1,8 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A box for safe storage of world.
+    /// A box for safe storage of the world.
+    /// Holds world's object and index.
     /// </summary>
     public readonly struct BoxedWorld
     {

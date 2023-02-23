@@ -1,7 +1,7 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An instance provider for worlds.
+    /// An worlds instance provider.
     /// </summary>
     public static class WorldsInstance
     {
@@ -11,9 +11,9 @@
         public static event System.Action<Worlds> Disposed;
 
         /// <summary>
-        /// Constructs and returns an instance of Worlds using config.
+        /// Creates an worlds instance.
         /// </summary>
-        public static IWorlds Construct(in WorldsConfig config)
+        public static IWorlds Create(in WorldsConfig? config = null)
         {
             _instance = new Worlds(config);
             Constructed?.Invoke(_instance);
@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        /// Returns the instance of Worlds.
+        /// Returns the worlds instance.
         /// Doesn't check the presence of the instance.
         /// </summary>
         public static IWorlds Get()
@@ -30,8 +30,9 @@
         }
 
         /// <summary>
-        /// Tries to get the instance of Worlds.
+        /// Tries to get the worlds instance.
         /// </summary>
+        /// <returns>True if the worlds instance has got successfully, false elsewhere.</returns>
         public static bool TryGet(out IWorlds worlds)
         {
             worlds = _instance;
@@ -39,7 +40,7 @@
         }
 
         /// <summary>
-        /// Disposes the instance of Worlds.
+        /// Disposes the worlds instance.
         /// </summary>
         public static void Dispose()
         {

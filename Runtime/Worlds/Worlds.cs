@@ -3,10 +3,10 @@
     /// <summary>
     /// A container for worlds.
     /// </summary>
-    public sealed class Worlds : IWorlds, IWorlds.IForObserver, System.IDisposable
+    public sealed class Worlds : IWorlds, System.IDisposable
     {
         private readonly WorldConfig? _worldConfig;
-        private readonly IWorld.IForContainer[] _worlds;
+        private readonly World[] _worlds;
         private int _worldCount;
 
         public event System.Action<BoxedWorld> Created;
@@ -15,52 +15,23 @@
         public Worlds(in WorldsConfig? config = null)
         {
             _worldConfig = config?.WorldConfig;
-            _worlds = new IWorld.IForContainer[config?.NumberMaxWorlds ?? WorldsConfig.Options.NumberMaxWorldsDefault];
+            _worlds = new World[config?.NumberMaxWorlds ?? WorldsConfig.Options.NumberMaxWorldsDefault];
         }
 
         /// <summary>
-        /// Creates a world with configs.
+        /// Creates a world and boxes it.
         /// </summary>
-        public IWorld Create(in WorldConfig? worldConfig = null)
+        public BoxedWorld Create(in WorldConfig? worldConfig = null)
         {
             var world = new World(worldConfig ?? _worldConfig);
+            var boxedWorld = new BoxedWorld(world, _worldCount);
             _worlds[_worldCount++] = world;
-            Created?.Invoke(new BoxedWorld(world, _worldCount - 1));
-            return world;
+            Created?.Invoke(boxedWorld);
+            return boxedWorld;
         }
 
         /// <summary>
-        /// Creates a world in the box with configs.
-        /// </summary>
-        public BoxedWorld CreateBoxed(in WorldConfig? worldConfig = null)
-        {
-            var index = _worldCount;
-            return new BoxedWorld(Create(worldConfig ?? _worldConfig), index);
-        }
-
-        /// <summary>
-        /// Returns the world by its index.
-        /// Doesn't check the presence of the world.
-        /// </summary>
-        public IWorld Get(int index)
-        {
-            return (IWorld)_worlds[index];
-        }
-
-        /// <summary>
-        /// Tries to get the world by its index.
-        /// </summary>
-        public bool TryGet(int index, out IWorld world)
-        {
-            world = null;
-            if (!(index < _worldCount))
-                return false;
-            world = (IWorld)_worlds[index];
-            return !ReferenceEquals(world, null);
-        }
-
-        /// <summary>
-        /// Removes the world by its index.
+        /// Removes the world.
         /// Doesn't check the presence of the world.
         /// </summary>
         public void Remove(int index)
@@ -68,17 +39,54 @@
             var removedWorld = _worlds[index];
             _worlds[index] = _worlds[--_worldCount];
             removedWorld.Dispose();
-            Removed?.Invoke(new BoxedWorld((IWorld)removedWorld, index));
+            Removed?.Invoke(new BoxedWorld(removedWorld, index));
         }
 
         /// <summary>
-        /// Removes the world by its index.
-        /// Checks the presence of the world.
+        /// Returns all the worlds contained.
         /// </summary>
-        public void RemoveSafe(int index)
+        public System.ReadOnlySpan<IWorld> GetWorlds()
         {
-            if (index < _worldCount && !ReferenceEquals(_worlds[index], null))
-                Remove(index);
+            return new System.ReadOnlySpan<IWorld>(_worlds, 0, _worldCount);
+        }
+
+        /// <summary>
+        /// Returns all the worlds contained.
+        /// </summary>
+        public System.ReadOnlySpan<World> GetRawWorlds()
+        {
+            return new System.ReadOnlySpan<World>(_worlds, 0, _worldCount);
+        }
+
+        /// <summary>
+        /// Tries to box the world.
+        /// </summary>
+        /// <returns>True if the world has boxed successfully, false elsewhere.</returns>
+        public bool TryBox(IWorld world, out BoxedWorld boxedWorld)
+        {
+            var worldsAsSpan = GetWorlds();
+            for (var i = _worldCount - 1; i > -1; --i)
+                if (world == worldsAsSpan[i])
+                {
+                    boxedWorld = new BoxedWorld(world, i);
+                    return true;
+                }
+
+            boxedWorld = new BoxedWorld(null, 0);
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to unbox the boxed world.
+        /// </summary>
+        /// <returns>True if the boxed world has unboxed successfully, false elsewhere.</returns>
+        public bool TryUnbox(BoxedWorld boxedWorld, out IWorld world)
+        {
+            world = null;
+            if (_worldCount < boxedWorld.Index)
+                return false;
+            world = boxedWorld.World;
+            return _worlds[boxedWorld.Index] == boxedWorld.World;
         }
 
         /// <summary>
@@ -86,8 +94,7 @@
         /// </summary>
         public void Dispose()
         {
-            var worldsAsSpan = new System.Span<IWorld.IForContainer>(_worlds, 0, _worldCount);
-            foreach (var world in worldsAsSpan)
+            foreach (var world in GetRawWorlds())
                 world.Dispose();
         }
     }

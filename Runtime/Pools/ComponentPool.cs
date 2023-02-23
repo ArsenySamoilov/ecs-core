@@ -1,117 +1,81 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A container for components of type <typeparamref name="TComponent"/>.
+    /// A component container.
     /// </summary>
-    public sealed class ComponentPool<TComponent> : IPool<TComponent>, INotGenericPool.IForContainer,
-        INotGenericPool.IForGroup, INotGenericPool.IForObserver, System.IDisposable
-        where TComponent : struct
+    /// <typeparam name="TComponent">The type of components contained.</typeparam>
+    public sealed class ComponentPool<TComponent> : IPool<TComponent>, INotGenericPool, System.IDisposable where TComponent : struct
     {
-        private readonly IEntities.IForObserver _entityContainer;
+        private readonly Entities _entityContainer;
+        private readonly EntitySet _entitySet;
         private readonly TComponent[] _denseComponents;
-        private SparseSet _sparseSet;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
 
-        public ComponentPool(IEntities.IForObserver entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
+        public ComponentPool(Entities entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
         {
             _entityContainer = entityContainer;
-            _denseComponents = new TComponent[poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault];
-            _sparseSet = new SparseSet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
+            _entitySet = new EntitySet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
                 poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault);
-            _entityContainer.Removed += RemoveSafe;
+            _denseComponents = new TComponent[poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault];
+            _entityContainer.Removed += OnEntityRemoved;
         }
 
         /// <summary>
-        /// Creates a component of type <typeparamref name="TComponent"/> for the entity.
-        /// Doesn't check the presence of the component in the entity.
+        /// Creates a component for the entity.
+        /// Doesn't check the presence of the component.
         /// </summary>
         public ref TComponent Create(int entity, TComponent sourceComponent = default)
         {
-            var denseIndex = _sparseSet.Add(entity);
+            var denseIndex = _entitySet.Add(entity);
             _denseComponents[denseIndex] = sourceComponent;
             Created?.Invoke(entity);
             return ref _denseComponents[denseIndex];
         }
 
         /// <summary>
-        /// Creates a component of type <typeparamref name="TComponent"/> for the entity.
-        /// Checks the presence of the component in the entity.
-        /// </summary>
-        public ref TComponent CreateSafe(int entity, TComponent sourceComponent = default)
-        {
-            if (!Have(entity))
-                return ref Create(entity, sourceComponent);
-
-            ref var component = ref Get(entity);
-            component = sourceComponent;
-            return ref component;
-        }
-
-        /// <summary>
-        /// Removes the component of type <typeparamref name="TComponent"/> from the entity.
-        /// Doesn't check the presence of the component in the entity.
+        /// Removes the component from the entity.
+        /// Doesn't check the presence of the component.
         /// </summary>
         public void Remove(int entity)
         {
-            var (destinationIndex, sourceIndex) = _sparseSet.Delete(entity);
+            var (destinationIndex, sourceIndex) = _entitySet.Delete(entity);
             _denseComponents[destinationIndex] = _denseComponents[sourceIndex];
             Removed?.Invoke(entity);
         }
 
         /// <summary>
-        /// Removes the component of type <typeparamref name="TComponent"/> from the entity.
-        /// Checks the presence of the component in the entity.
-        /// </summary>
-        public void RemoveSafe(int entity)
-        {
-            if (Have(entity))
-                Remove(entity);
-        }
-
-        /// <summary>
-        /// Checks the presence of the component of type <typeparamref name="TComponent"/> in the entity.
+        /// Checks the presence of the component for the entity.
         /// </summary>
         public bool Have(int entity)
         {
-            return _sparseSet.Have(entity);
+            return _entitySet.Have(entity);
         }
 
         /// <summary>
-        /// Returns the component of type <typeparamref name="TComponent"/> that belongs to the entity.
-        /// Doesn't check the presence of the component in the entity.
+        /// Returns the component for the entity.
+        /// Doesn't check the presence of the component.
         /// </summary>
         public ref TComponent Get(int entity)
         {
-            return ref _denseComponents[_sparseSet.Get(entity)];
+            return ref _denseComponents[_entitySet.Get(entity)];
         }
 
         /// <summary>
-        /// Returns the component of type <typeparamref name="TComponent"/> that belongs to the entity.
-        /// Checks the presence of the component in the entity.
-        /// </summary>
-        public ref TComponent GetSafe(int entity)
-        {
-            if (Have(entity))
-                return ref Get(entity);
-            return ref Create(entity);
-        }
-
-        /// <summary>
-        /// Returns all the entities from the pool.
+        /// Returns all the entities with components contained.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
-            return _sparseSet.GetEntities();
+            return _entitySet.GetEntities();
         }
 
         /// <summary>
-        /// Checks type matching with <typeparamref name="TComponentType"/>
+        /// Returns all the components contained.
         /// </summary>
-        public bool MatchComponentType<TComponentType>() where TComponentType : struct
+        public System.ReadOnlySpan<TComponent> GetComponents()
         {
-            return typeof(TComponentType) == typeof(TComponent);
+            return new System.ReadOnlySpan<TComponent>(_denseComponents, 0, _entitySet.Length);
         }
 
         /// <summary>
@@ -119,7 +83,13 @@
         /// </summary>
         public void Dispose()
         {
-            _entityContainer.Removed -= RemoveSafe;
+            _entityContainer.Removed -= OnEntityRemoved;
+        }
+
+        private void OnEntityRemoved(int entity)
+        {
+            if (Have(entity))
+                Remove(entity);
         }
     }
 }

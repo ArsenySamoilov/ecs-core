@@ -1,17 +1,18 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A box for safe storage of an entity.
+    /// A box for safe storage of the entity.
+    /// Holds entity's identifier and generation.
     /// </summary>
     public readonly struct BoxedEntity
     {
         public int Id { get; }
-        public int Generation { get; }
+        public int Gen { get; }
 
-        public BoxedEntity(int id, int generation)
+        public BoxedEntity(int id, int gen)
         {
             Id = id;
-            Generation = generation;
+            Gen = gen;
         }
     }
 }

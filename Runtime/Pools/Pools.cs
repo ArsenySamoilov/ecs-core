@@ -1,77 +1,71 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A container for pools.
+    /// A pool container.
     /// </summary>
-    public sealed class Pools : IPools, IPools.IForContainer, IPools.IForGroup, System.IDisposable
+    public sealed class Pools : IPools, System.IDisposable
     {
-        private readonly IEntities.IForObserver _entityContainer;
+        private readonly Entities _entityContainer;
         private readonly EntitiesConfig? _entitiesConfig;
         private readonly PoolConfig? _poolConfig;
-        private readonly INotGenericPool.IForContainer[] _pools;
-        private int _poolCount;
+        private readonly EntitySet _entitySet;
+        private readonly INotGenericPool[] _densePools;
 
-        public Pools(IEntities.IForObserver entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolsConfig? poolsConfig = null)
+        public Pools(Entities entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolsConfig? poolsConfig = null)
         {
+            var numberMaxPools = poolsConfig?.NumberMaxPools ?? PoolsConfig.Options.NumberMaxPoolsDefault;
             _entityContainer = entityContainer;
             _entitiesConfig = entitiesConfig;
             _poolConfig = poolsConfig?.PoolConfig;
-            _pools = new INotGenericPool.IForContainer[poolsConfig?.NumberMaxPools ?? PoolsConfig.Options.NumberMaxPoolsDefault];
-            _poolCount = 0;
+            _entitySet = new EntitySet(numberMaxPools, numberMaxPools);
+            _densePools = new INotGenericPool[numberMaxPools];
         }
 
         /// <summary>
-        /// Creates a pool of type <typeparamref name="TComponent"/> and returns itself.
-        /// Doesn't check the presence of the pool in the container.
+        /// Creates a pool and returns itself.
+        /// Doesn't check the presence of the pool.
         /// </summary>
+        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
         public Pools Add<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
         {
-            CreateSpecifiedPool<TComponent>(poolConfig ?? _poolConfig);
+            Create<TComponent>(poolConfig ?? _poolConfig);
             return this;
         }
 
         /// <summary>
-        /// Creates a pool of type <typeparamref name="TComponent"/> and returns itself.
-        /// Checks the presence of the pool in the container.
+        /// Creates a pool.
+        /// Doesn't check the presence of the pool.
         /// </summary>
-        public Pools AddSafe<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
-        {
-            ((IPools)this).Get<TComponent>(poolConfig ?? _poolConfig);
-            return this;
-        }
-
-        /// <summary>
-        /// Creates a pool of type <typeparamref name="TComponent"/>.
-        /// </summary>
+        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
         public IPool<TComponent> Create<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
         {
-            return (IPool<TComponent>)CreateSpecifiedPool<TComponent>(poolConfig ?? _poolConfig);
+            var isTag = typeof(ITag).IsAssignableFrom(typeof(TComponent));
+            INotGenericPool pool = isTag
+                ? new TagPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig)
+                : new ComponentPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig);
+            _densePools[_entitySet.Add(ComponentId.For<TComponent>.Get())] = pool;
+            return (IPool<TComponent>)pool;
         }
 
         /// <summary>
-        /// Returns the interface of pool of type <typeparamref name="TComponent"/>.
-        /// Checks the presence of the pool in the container.
+        /// Returns the pool.
+        /// Checks the presence of the pool.
         /// </summary>
-        INotGenericPool.IForGroup IPools.IForGroup.Get<TComponent>(in PoolConfig? poolConfig) where TComponent : struct
+        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
+        public IPool<TComponent> Get<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
         {
-            var poolsAsSpan = new System.Span<INotGenericPool.IForContainer>(_pools, 0, _poolCount);
-            foreach (var pool in poolsAsSpan)
-                if (pool.MatchComponentType<TComponent>())
-                    return (INotGenericPool.IForGroup)pool;
-            return (INotGenericPool.IForGroup)CreateSpecifiedPool<TComponent>(poolConfig ?? _poolConfig);
+            var componentId = ComponentId.For<TComponent>.Get();
+            if (_entitySet.Have(componentId))
+                return (IPool<TComponent>)_densePools[_entitySet.Get(componentId)];
+            return Create<TComponent>(poolConfig ?? _poolConfig);
         }
 
         /// <summary>
-        /// Returns the pool of type <typeparamref name="TComponent"/> and creates it if needed.
-        /// Checks the presence of the pool in the container.
+        /// Returns all the pools contained.
         /// </summary>
-        IPool<TComponent> IPools.Get<TComponent>(in PoolConfig? poolConfig) where TComponent : struct
+        public System.ReadOnlySpan<INotGenericPool> GetPools()
         {
-            var poolsAsSpan = new System.Span<INotGenericPool.IForContainer>(_pools, 0, _poolCount);
-            foreach (var pool in poolsAsSpan)
-                if (pool.MatchComponentType<TComponent>())
-                    return (IPool<TComponent>)pool;
-            return (IPool<TComponent>)CreateSpecifiedPool<TComponent>(poolConfig ?? _poolConfig);
+            return new System.ReadOnlySpan<INotGenericPool>(_densePools, 0, _entitySet.Length);
         }
 
         /// <summary>
@@ -79,18 +73,8 @@
         /// </summary>
         public void Dispose()
         {
-            var poolsAsSpan = new System.Span<INotGenericPool.IForContainer>(_pools, 0, _poolCount);
-            foreach (var pool in poolsAsSpan)
+            foreach (var pool in GetPools())
                 pool.Dispose();
-        }
-
-        private INotGenericPool.IForContainer CreateSpecifiedPool<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
-        {
-            var isTag = typeof(ITag).IsAssignableFrom(typeof(TComponent));
-            INotGenericPool.IForContainer pool = isTag
-                ? new TagPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig)
-                : new ComponentPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig);
-            return _pools[_poolCount++] = pool;
         }
     }
 }

@@ -1,65 +1,52 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// A container for groups.
+    /// A group container.
     /// </summary>
-    public sealed class Groups : IGroups, IGroups.IForContainer, IGroups.IForBuilder, IGroups.IForRuiner, System.IDisposable
+    public sealed class Groups : IGroups, System.IDisposable
     {
-        private readonly IPools.IForGroup _poolContainer;
+        private readonly Pools _poolContainer;
         private readonly EntitiesConfig? _entitiesConfig;
         private readonly GroupConfig? _groupConfig;
-        private readonly IGroup.IForContainer[] _groups;
+        private readonly Group[] _groups;
         private int _groupCount;
 
-        public Groups(IPools.IForGroup poolContainer, in EntitiesConfig? entitiesConfig = null, in GroupsConfig? groupsConfig = null)
+        public Groups(Pools poolContainer, in EntitiesConfig? entitiesConfig = null, in GroupsConfig? groupsConfig = null)
         {
             _poolContainer = poolContainer;
             _entitiesConfig = entitiesConfig;
             _groupConfig = groupsConfig?.GroupConfig;
-            _groups = new IGroup.IForContainer[groupsConfig?.NumberMaxGroups ?? GroupsConfig.Options.NumberMaxGroupsDefault];
+            _groups = new Group[groupsConfig?.NumberMaxGroups ?? GroupsConfig.Options.NumberMaxGroupsDefault];
             _groupCount = 0;
         }
 
         /// <summary>
-        /// Builds a group.
+        /// Begins constructing a group.
         /// </summary>
-        /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        public IGroupBuilder Build<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct
+        /// <typeparam name="TComponent">Any included component in the group.</typeparam>
+        public IGroupConstructor Construct<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct
         {
-            return new GroupBuilder(this, _poolContainer, groupConfig ?? _groupConfig).Include<TComponent>();
+            return new GroupConstructor(this, _poolContainer, groupConfig ?? _groupConfig).Include<TComponent>();
         }
 
         /// <summary>
-        /// Ruins the group.
+        /// Returns the group.
+        /// Checks the presence of the group.
         /// </summary>
-        /// <typeparam name="TComponent">One of the included components in the group</typeparam>
-        public IGroupRuiner Ruin<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct
+        public IGroup Get(TypeSet typeSet, PoolSet poolSet, in GroupConfig? groupConfig = null)
         {
-            return new GroupRuiner(this, groupConfig ?? _groupConfig).Include<TComponent>();
-        }
-
-        /// <summary>
-        /// Creates a group based on the builder.
-        /// </summary>
-        public IGroup Create(in TypeSet typeSet, in PoolSet poolSet, in GroupConfig? groupConfig = null)
-        {
-            var groupsAsSpan = new System.Span<IGroup.IForContainer>(_groups, 0, _groupCount);
-            foreach (var group in groupsAsSpan)
+            foreach (var group in GetGroups())
                 if (group.Match(typeSet))
-                    return (IGroup)group;
-            return Add(new Group(typeSet, poolSet, _entitiesConfig, groupConfig ?? _groupConfig));
+                    return group;
+            return _groups[_groupCount++] = new Group(typeSet, poolSet, _entitiesConfig, groupConfig ?? _groupConfig);
         }
 
         /// <summary>
-        /// Removes the group based on the ruiner.
+        /// Returns all the groups contained.
         /// </summary>
-        public IGroups Remove(in TypeSet typeSet)
+        public System.ReadOnlySpan<Group> GetGroups()
         {
-            var groupsAsSpan = new System.Span<IGroup.IForContainer>(_groups, 0, _groupCount);
-            for (var i = 0; i < _groupCount; ++i)
-                if (groupsAsSpan[i].Match(typeSet))
-                    return Delete(i);
-            return this;
+            return new System.ReadOnlySpan<Group>(_groups, 0, _groupCount);
         }
 
         /// <summary>
@@ -67,21 +54,8 @@
         /// </summary>
         public void Dispose()
         {
-            var groupsAsSpan = new System.Span<IGroup.IForContainer>(_groups, 0, _groupCount);
-            foreach (var group in groupsAsSpan)
+            foreach (var group in GetGroups())
                 group.Dispose();
-        }
-
-        private IGroup Add(IGroup.IForContainer group)
-        {
-            _groups[_groupCount++] = group;
-            return (IGroup)group;
-        }
-
-        private IGroups Delete(int index)
-        {
-            _groups[index] = _groups[--_groupCount];
-            return this;
         }
     }
 }

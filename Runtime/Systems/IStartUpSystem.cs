@@ -1,12 +1,12 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface for systems with a required starting up.
+    /// An interface of a system with start up logic.
     /// </summary>
     public interface IStartUpSystem
     {
         /// <summary>
-        /// Starts up the system.
+        /// Starts up this system.
         /// </summary>
         void StartUp();
     }

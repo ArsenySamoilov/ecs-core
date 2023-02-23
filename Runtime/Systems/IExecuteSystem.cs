@@ -1,12 +1,12 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface for systems with an execution logic.
+    /// An interface of a system with executive logic.
     /// </summary>
     public interface IExecuteSystem
     {
         /// <summary>
-        /// Executes system's logic.
+        /// Executes logic.
         /// </summary>
         void Execute();
     }
