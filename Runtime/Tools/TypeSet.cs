@@ -32,7 +32,7 @@
                 _included[i + 1] = _included[i];
             _included[i + 1] = componentId;
             ++_includedCount;
-            Hash += (_includedCount + _excludedCount) * componentId;
+            Hash += (_includedCount + _excludedCount) * (componentId + 1);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@
                 _excluded[i + 1] = _excluded[i];
             _excluded[i + 1] = componentId;
             ++_excludedCount;
-            Hash += (_includedCount + _excludedCount) * componentId * 2;
+            Hash += (_includedCount + _excludedCount) * (componentId + 1) * 100;
         }
 
         /// <summary>

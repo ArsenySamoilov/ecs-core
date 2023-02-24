@@ -5,28 +5,20 @@
     /// </summary>
     public sealed class Groups : IGroups, System.IDisposable
     {
-        private readonly Pools _poolContainer;
         private readonly EntitiesConfig? _entitiesConfig;
         private readonly GroupConfig? _groupConfig;
         private readonly Group[] _groups;
         private int _groupCount;
 
+        public Pools PoolContainer { get; }
+
         public Groups(Pools poolContainer, in EntitiesConfig? entitiesConfig = null, in GroupsConfig? groupsConfig = null)
         {
-            _poolContainer = poolContainer;
+            PoolContainer = poolContainer;
             _entitiesConfig = entitiesConfig;
             _groupConfig = groupsConfig?.GroupConfig;
             _groups = new Group[groupsConfig?.NumberMaxGroups ?? GroupsConfig.Options.NumberMaxGroupsDefault];
             _groupCount = 0;
-        }
-
-        /// <summary>
-        /// Begins constructing a group.
-        /// </summary>
-        /// <typeparam name="TComponent">Any included component in the group.</typeparam>
-        public IGroupConstructor Construct<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct
-        {
-            return new GroupConstructor(this, _poolContainer, groupConfig ?? _groupConfig).Include<TComponent>();
         }
 
         /// <summary>

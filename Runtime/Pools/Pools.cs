@@ -22,28 +22,6 @@
         }
 
         /// <summary>
-        /// Creates a pool and returns itself.
-        /// Doesn't check the presence of the pool.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
-        public Pools Add<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
-        {
-            Create<TComponent>(poolConfig ?? _poolConfig);
-            return this;
-        }
-
-        /// <summary>
-        /// Removes the pool and returns itself.
-        /// Doesn't check the presence of the pool.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
-        public Pools Delete<TComponent>() where TComponent : struct
-        {
-            Remove<TComponent>();
-            return this;
-        }
-
-        /// <summary>
         /// Creates a pool.
         /// Doesn't check the presence of the pool.
         /// </summary>

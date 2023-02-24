@@ -6,9 +6,9 @@
     public interface IGroups
     {
         /// <summary>
-        /// Begins constructing a group.
+        /// Returns the group.
+        /// Checks the presence of the group.
         /// </summary>
-        /// <typeparam name="TComponent">Any included component in the group.</typeparam>
-        IGroupConstructor Construct<TComponent>(in GroupConfig? groupConfig = null) where TComponent : struct;
+        IGroup Get(TypeSet typeSet, PoolSet poolSet, in GroupConfig? groupConfig = null);
     }
 }

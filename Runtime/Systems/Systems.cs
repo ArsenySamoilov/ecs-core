@@ -47,15 +47,6 @@
         }
 
         /// <summary>
-        /// Adds a system and returns itself.
-        /// </summary>
-        /// <typeparam name="TSystem">The type of the system.</typeparam>
-        public ISystems Add<TSystem>() where TSystem : class, ISystem, new()
-        {
-            return Add(new TSystem());
-        }
-
-        /// <summary>
         /// Removes the system at the index.
         /// Doesn't check the presence of the system.
         /// </summary>

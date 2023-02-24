@@ -11,12 +11,6 @@
         ISystems Add(ISystem system);
 
         /// <summary>
-        /// Adds a system.
-        /// </summary>
-        /// <typeparam name="TSystem">The type of the system.</typeparam>
-        ISystems Add<TSystem>() where TSystem : class, ISystem, new();
-
-        /// <summary>
         /// Initializes all the systems.
         /// </summary>
         void Initialize();
