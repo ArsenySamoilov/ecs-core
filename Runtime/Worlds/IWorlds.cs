@@ -27,5 +27,10 @@
         /// </summary>
         /// <returns>True if the boxed world has unboxed successfully, false elsewhere.</returns>
         bool TryUnbox(BoxedWorld boxedWorld, out IWorld world);
+
+        /// <summary>
+        /// Disposes all the worlds before deleting.
+        /// </summary>
+        void Dispose();
     }
 }
