@@ -17,11 +17,6 @@
         void Remove(int index);
 
         /// <summary>
-        /// Returns all the worlds contained.
-        /// </summary>
-        System.ReadOnlySpan<IWorld> GetWorlds();
-
-        /// <summary>
         /// Tries to box the world.
         /// </summary>
         /// <returns>True if the world has boxed successfully, false elsewhere.</returns>

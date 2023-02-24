@@ -7,51 +7,47 @@
     {
         private readonly IWorld _world;
 
-        private readonly ISystem[] _systems;
-        private readonly IInitializeSystem[] _initializeSystems;
-        private readonly IStartUpSystem[] _startUpSystems;
-        private readonly IExecuteSystem[] _executeSystems;
-        private readonly System.IDisposable[] _disposeSystems;
-        private int _systemCount;
-        private int _initializeSystemCount;
-        private int _startUpSystemCount;
-        private int _executeSystemCount;
-        private int _disposableSystemCount;
+        private readonly OneItemSet<ISystem> _systemsSet;
+        private readonly OneItemSet<IInitializeSystem> _initializeSystemsSet;
+        private readonly OneItemSet<IStartUpSystem> _startUpSystemsSet;
+        private readonly OneItemSet<IExecuteSystem> _executeSystemsSet;
+        private readonly OneItemSet<System.IDisposable> _disposeSystemsSet;
 
         public Systems(IWorld world, in SystemsConfig? config = null)
         {
+            var systemCount = config?.NumberMaxSystems ?? SystemsConfig.Options.NumberMaxSystemsDefault;
             _world = world;
-            _systems = new ISystem[config?.NumberMaxSystems ?? SystemsConfig.Options.NumberMaxSystemsDefault];
-            _initializeSystems = new IInitializeSystem[config?.NumberMaxInitializeSystems ?? SystemsConfig.Options.NumberMaxInitializeSystemsDefault];
-            _startUpSystems = new IStartUpSystem[config?.NumberMaxStartUpSystems ?? SystemsConfig.Options.NumberMaxStartUpSystemsDefault];
-            _executeSystems = new IExecuteSystem[config?.NumberMaxExecuteSystems ?? SystemsConfig.Options.NumberMaxExecuteSystemsDefault];
-            _disposeSystems = new System.IDisposable[config?.NumberMaxDisposeSystems ?? SystemsConfig.Options.NumberMaxDisposeSystemsDefault];
-            _systemCount = 0;
-            _initializeSystemCount = 0;
-            _startUpSystemCount = 0;
-            _executeSystemCount = 0;
-            _disposableSystemCount = 0;
+            _systemsSet = new OneItemSet<ISystem>(systemCount, systemCount);
+            _initializeSystemsSet = new OneItemSet<IInitializeSystem>(systemCount,
+                config?.NumberMaxInitializeSystems ?? SystemsConfig.Options.NumberMaxInitializeSystemsDefault);
+            _startUpSystemsSet = new OneItemSet<IStartUpSystem>(systemCount,
+                config?.NumberMaxStartUpSystems ?? SystemsConfig.Options.NumberMaxStartUpSystemsDefault);
+            _executeSystemsSet = new OneItemSet<IExecuteSystem>(systemCount,
+                config?.NumberMaxExecuteSystems ?? SystemsConfig.Options.NumberMaxExecuteSystemsDefault);
+            _disposeSystemsSet = new OneItemSet<System.IDisposable>(systemCount,
+                config?.NumberMaxDisposeSystems ?? SystemsConfig.Options.NumberMaxDisposeSystemsDefault);
         }
 
         /// <summary>
-        /// Adds the system.
+        /// Adds the system and returns itself.
         /// </summary>
         public ISystems Add(ISystem system)
         {
-            _systems[_systemCount++] = system;
+            var index = _systemsSet.Length;
+            _systemsSet.Add(index, system);
             if (system is IInitializeSystem initializeSystem)
-                _initializeSystems[_initializeSystemCount++] = initializeSystem;
+                _initializeSystemsSet.Add(index, initializeSystem);
             if (system is IStartUpSystem startUpSystem)
-                _startUpSystems[_startUpSystemCount++] = startUpSystem;
+                _startUpSystemsSet.Add(index, startUpSystem);
             if (system is IExecuteSystem executeSystem)
-                _executeSystems[_executeSystemCount++] = executeSystem;
+                _executeSystemsSet.Add(index, executeSystem);
             if (system is System.IDisposable disposeSystem)
-                _disposeSystems[_disposableSystemCount++] = disposeSystem;
+                _disposeSystemsSet.Add(index, disposeSystem);
             return this;
         }
 
         /// <summary>
-        /// Adds a system.
+        /// Adds a system and returns itself.
         /// </summary>
         /// <typeparam name="TSystem">The type of the system.</typeparam>
         public ISystems Add<TSystem>() where TSystem : class, ISystem, new()
@@ -60,12 +56,36 @@
         }
 
         /// <summary>
+        /// Removes the system at the index.
+        /// Doesn't check the presence of the system.
+        /// </summary>
+        public void Remove(int index)
+        {
+            _systemsSet.Delete(index);
+            if (_initializeSystemsSet.Have(index))
+                _initializeSystemsSet.Delete(index);
+            if (_startUpSystemsSet.Have(index))
+                _startUpSystemsSet.Delete(index);
+            if (_executeSystemsSet.Have(index))
+                _executeSystemsSet.Delete(index);
+            if (_disposeSystemsSet.Have(index))
+                _disposeSystemsSet.Delete(index);
+        }
+
+        /// <summary>
+        /// Returns all the systems contained.
+        /// </summary>
+        public System.ReadOnlySpan<ISystem> GetSystems()
+        {
+            return _systemsSet.GetItems();
+        }
+
+        /// <summary>
         /// Initializes all the systems.
         /// </summary>
         public void Initialize()
         {
-            var initializeSystemsAsSpan = new System.Span<IInitializeSystem>(_initializeSystems, 0, _initializeSystemCount);
-            foreach (var system in initializeSystemsAsSpan)
+            foreach (var system in _initializeSystemsSet.GetItems())
                 system.Initialize(_world);
         }
 
@@ -74,8 +94,7 @@
         /// </summary>
         public void StartUp()
         {
-            var startUpSystemsAsSpan = new System.Span<IStartUpSystem>(_startUpSystems, 0, _startUpSystemCount);
-            foreach (var system in startUpSystemsAsSpan)
+            foreach (var system in _startUpSystemsSet.GetItems())
                 system.StartUp();
         }
 
@@ -84,17 +103,8 @@
         /// </summary>
         public void Execute()
         {
-            var executeSystemsAsSpan = new System.Span<IExecuteSystem>(_executeSystems, 0, _executeSystemCount);
-            foreach (var system in executeSystemsAsSpan)
+            foreach (var system in _executeSystemsSet.GetItems())
                 system.Execute();
-        }
-
-        /// <summary>
-        /// Returns all the systems contained.
-        /// </summary>
-        public System.ReadOnlySpan<ISystem> GetSystems()
-        {
-            return new System.ReadOnlySpan<ISystem>(_systems, 0, _systemCount);
         }
 
         /// <summary>
@@ -102,8 +112,7 @@
         /// </summary>
         public void Dispose()
         {
-            var disposeSystemsAsSpan = new System.Span<System.IDisposable>(_disposeSystems, 0, _disposableSystemCount);
-            foreach (var system in disposeSystemsAsSpan)
+            foreach (var system in _disposeSystemsSet.GetItems())
                 system.Dispose();
         }
     }

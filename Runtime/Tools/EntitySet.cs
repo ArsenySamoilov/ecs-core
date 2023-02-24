@@ -19,7 +19,7 @@
             _sparseIndexNull = denseSize;
             _denseEntityCount = 0;
 
-            System.Array.Fill(_sparseIndices, _sparseIndexNull);
+            new System.Span<int>(_sparseIndices).Fill(_sparseIndexNull);
         }
 
         /// <summary>

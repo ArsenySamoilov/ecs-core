@@ -45,15 +45,7 @@
         /// <summary>
         /// Returns all the worlds contained.
         /// </summary>
-        public System.ReadOnlySpan<IWorld> GetWorlds()
-        {
-            return new System.ReadOnlySpan<IWorld>(_worlds, 0, _worldCount);
-        }
-
-        /// <summary>
-        /// Returns all the worlds contained.
-        /// </summary>
-        public System.ReadOnlySpan<World> GetRawWorlds()
+        public System.ReadOnlySpan<World> GetWorlds()
         {
             return new System.ReadOnlySpan<World>(_worlds, 0, _worldCount);
         }
@@ -94,7 +86,7 @@
         /// </summary>
         public void Dispose()
         {
-            foreach (var world in GetRawWorlds())
+            foreach (var world in GetWorlds())
                 world.Dispose();
         }
     }

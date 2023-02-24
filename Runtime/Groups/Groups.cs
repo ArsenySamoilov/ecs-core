@@ -30,15 +30,39 @@
         }
 
         /// <summary>
+        /// Removes the group.
+        /// Checks the presence of the group.
+        /// </summary>
+        public void Remove(TypeSet typeSet)
+        {
+            var groupsAsSpan = new System.Span<Group>(_groups, 0, _groupCount);
+            var rightmost = FindRightmostSameHash(typeSet);
+            for (var i = rightmost; i > -1 && groupsAsSpan[i].Hash == typeSet.Hash; --i)
+                if (groupsAsSpan[i].Match(typeSet))
+                {
+                    groupsAsSpan[i].Dispose();
+                    --_groupCount;
+                    for (var j = i; j < _groupCount; ++j)
+                        groupsAsSpan[j] = groupsAsSpan[j + 1];
+                    return;
+                }
+        }
+
+        /// <summary>
         /// Returns the group.
         /// Checks the presence of the group.
         /// </summary>
         public IGroup Get(TypeSet typeSet, PoolSet poolSet, in GroupConfig? groupConfig = null)
         {
-            foreach (var group in GetGroups())
-                if (group.Match(typeSet))
-                    return group;
-            return _groups[_groupCount++] = new Group(typeSet, poolSet, _entitiesConfig, groupConfig ?? _groupConfig);
+            var groupsAsSpan = GetGroups();
+            var rightmost = FindRightmostSameHash(typeSet);
+            for (var i = rightmost; i > -1 && groupsAsSpan[i].Hash == typeSet.Hash; --i)
+                if (groupsAsSpan[i].Match(typeSet))
+                    return groupsAsSpan[i];
+            ++rightmost;
+            for (var i = _groupCount++; i > rightmost; --i)
+                _groups[i] = groupsAsSpan[i - 1];
+            return _groups[rightmost] = new Group(typeSet, poolSet, _entitiesConfig, groupConfig ?? _groupConfig);
         }
 
         /// <summary>
@@ -56,6 +80,22 @@
         {
             foreach (var group in GetGroups())
                 group.Dispose();
+        }
+
+        private int FindRightmostSameHash(TypeSet typeSet)
+        {
+            var groupsAsSpan = GetGroups();
+            int l, r;
+            for (l = 0, r = _groupCount; l < r;)
+            {
+                var i = (l + r) / 2;
+                if (groupsAsSpan[i].Hash > typeSet.Hash)
+                    r = i;
+                else
+                    l = i + 1;
+            }
+
+            return r - 1;
         }
     }
 }

@@ -33,6 +33,17 @@
         }
 
         /// <summary>
+        /// Removes the pool and returns itself.
+        /// Doesn't check the presence of the pool.
+        /// </summary>
+        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
+        public Pools Delete<TComponent>() where TComponent : struct
+        {
+            Remove<TComponent>();
+            return this;
+        }
+
+        /// <summary>
         /// Creates a pool.
         /// Doesn't check the presence of the pool.
         /// </summary>
@@ -45,6 +56,27 @@
                 : new ComponentPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig);
             _densePools[_entitySet.Add(ComponentId.For<TComponent>.Get())] = pool;
             return (IPool<TComponent>)pool;
+        }
+
+        /// <summary>
+        /// Removes the pool.
+        /// Doesn't check the presence of the pool.
+        /// </summary>
+        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
+        public void Remove<TComponent>() where TComponent : struct
+        {
+            var (destinationIndex, sourceIndex) = _entitySet.Delete(ComponentId.For<TComponent>.Get());
+            _densePools[destinationIndex].Dispose();
+            _densePools[destinationIndex] = _densePools[sourceIndex];
+        }
+
+        /// <summary>
+        /// Checks the presence of the pool.
+        /// </summary>
+        /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
+        public bool Have<TComponent>() where TComponent : struct
+        {
+            return _entitySet.Have(ComponentId.For<TComponent>.Get());
         }
 
         /// <summary>

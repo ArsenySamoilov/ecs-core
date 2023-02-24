@@ -9,7 +9,8 @@
         private readonly int[] _excluded;
         private int _includedCount;
         private int _excludedCount;
-        private int _hash;
+
+        public int Hash { get; private set; }
 
         public TypeSet(in GroupConfig? groupConfig = null)
         {
@@ -17,7 +18,7 @@
             _excluded = new int[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
             _includedCount = 0;
             _excludedCount = 0;
-            _hash = 0;
+            Hash = 0;
         }
 
         /// <summary>
@@ -31,7 +32,7 @@
                 _included[i + 1] = _included[i];
             _included[i + 1] = componentId;
             ++_includedCount;
-            _hash += (_includedCount + _excludedCount) * componentId;
+            Hash += (_includedCount + _excludedCount) * componentId;
         }
 
         /// <summary>
@@ -45,7 +46,7 @@
                 _excluded[i + 1] = _excluded[i];
             _excluded[i + 1] = componentId;
             ++_excludedCount;
-            _hash += (_includedCount + _excludedCount) * componentId * 2;
+            Hash += (_includedCount + _excludedCount) * componentId * 2;
         }
 
         /// <summary>
@@ -53,7 +54,7 @@
         /// </summary>
         public bool Match(TypeSet typeSet)
         {
-            if (typeSet._hash != _hash || typeSet._includedCount != _includedCount || typeSet._excludedCount != _excludedCount)
+            if (typeSet._includedCount != _includedCount || typeSet._excludedCount != _excludedCount)
                 return false;
             for (var i = _includedCount - 1; i > -1; --i)
                 if (_included[i] != typeSet._included[i])

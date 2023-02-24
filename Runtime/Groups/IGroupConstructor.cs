@@ -21,5 +21,10 @@
         /// Returns a group with the matching set of components.
         /// </summary>
         IGroup Build();
+
+        /// <summary>
+        /// Removes the group with the matching set of components.
+        /// </summary>
+        IGroups Ruin();
     }
 }

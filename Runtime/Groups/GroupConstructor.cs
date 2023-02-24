@@ -47,5 +47,14 @@
         {
             return _groupContainer.Get(_typeSet, _poolSet, _groupConfig);
         }
+
+        /// <summary>
+        /// Removes the group with the matching set of components.
+        /// </summary>
+        public IGroups Ruin()
+        {
+            _groupContainer.Remove(_typeSet);
+            return _groupContainer;
+        }
     }
 }

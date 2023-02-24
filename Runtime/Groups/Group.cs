@@ -9,6 +9,8 @@
         private readonly PoolSet _poolSet;
         private readonly EntitySet _entitySet;
 
+        public int Hash => _typeSet.Hash;
+
         public Group(in TypeSet typeSet, in PoolSet poolSet, in EntitiesConfig? entitiesConfig = null, in GroupConfig? groupConfig = null)
         {
             _typeSet = typeSet;

@@ -7,8 +7,7 @@
     public sealed class ComponentPool<TComponent> : IPool<TComponent>, INotGenericPool, System.IDisposable where TComponent : struct
     {
         private readonly Entities _entityContainer;
-        private readonly EntitySet _entitySet;
-        private readonly TComponent[] _denseComponents;
+        private readonly OneItemSet<TComponent> _components;
 
         public event System.Action<int> Created;
         public event System.Action<int> Removed;
@@ -16,9 +15,8 @@
         public ComponentPool(Entities entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolConfig? poolConfig = null)
         {
             _entityContainer = entityContainer;
-            _entitySet = new EntitySet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
+            _components = new OneItemSet<TComponent>(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
                 poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault);
-            _denseComponents = new TComponent[poolConfig?.NumberMaxComponents ?? PoolConfig.Options.NumberMaxComponentsDefault];
             _entityContainer.Removed += OnEntityRemoved;
         }
 
@@ -28,10 +26,9 @@
         /// </summary>
         public ref TComponent Create(int entity, TComponent sourceComponent = default)
         {
-            var denseIndex = _entitySet.Add(entity);
-            _denseComponents[denseIndex] = sourceComponent;
+            ref var component = ref _components.Add(entity, sourceComponent);
             Created?.Invoke(entity);
-            return ref _denseComponents[denseIndex];
+            return ref component;
         }
 
         /// <summary>
@@ -40,8 +37,7 @@
         /// </summary>
         public void Remove(int entity)
         {
-            var (destinationIndex, sourceIndex) = _entitySet.Delete(entity);
-            _denseComponents[destinationIndex] = _denseComponents[sourceIndex];
+            _components.Delete(entity);
             Removed?.Invoke(entity);
         }
 
@@ -50,7 +46,7 @@
         /// </summary>
         public bool Have(int entity)
         {
-            return _entitySet.Have(entity);
+            return _components.Have(entity);
         }
 
         /// <summary>
@@ -59,7 +55,7 @@
         /// </summary>
         public ref TComponent Get(int entity)
         {
-            return ref _denseComponents[_entitySet.Get(entity)];
+            return ref _components.Get(entity);
         }
 
         /// <summary>
@@ -67,7 +63,7 @@
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
         {
-            return _entitySet.GetEntities();
+            return _components.GetEntities();
         }
 
         /// <summary>
@@ -75,7 +71,7 @@
         /// </summary>
         public System.ReadOnlySpan<TComponent> GetComponents()
         {
-            return new System.ReadOnlySpan<TComponent>(_denseComponents, 0, _entitySet.Length);
+            return _components.GetItems();
         }
 
         /// <summary>
