@@ -5,45 +5,49 @@
     /// </summary>
     public sealed class Group : IGroup, System.IDisposable
     {
-        private readonly TypeSet _typeSet;
-        private readonly PoolSet _poolSet;
-        private readonly EntitySet _entitySet;
+        private TypeSet _typeSet;
+        private PoolSet _poolSet;
+        private EntitySet _entitySet;
 
         public int Hash => _typeSet.Hash;
 
-        public Group(in TypeSet typeSet, in PoolSet poolSet, in EntitiesConfig? entitiesConfig = null, in GroupConfig? groupConfig = null)
+        public event System.Action<IGroup> Disposed;
+
+        public Group(TypeSet typeSet, PoolSet poolSet, in EntitiesConfig? entitiesConfig = null, in GroupConfig? groupConfig = null)
         {
+            var numberMaxEntities = entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault;
+            var numberMaxGrouped = groupConfig?.NumberMaxGrouped ?? GroupConfig.Options.NumberMaxGroupedDefault;
             _typeSet = typeSet;
             _poolSet = poolSet;
-            _entitySet = new EntitySet(entitiesConfig?.NumberMaxEntities ?? EntitiesConfig.Options.NumberMaxEntitiesDefault,
-                groupConfig?.NumberMaxGrouped ?? GroupConfig.Options.NumberMaxGroupedDefault);
+            _entitySet = new EntitySet(numberMaxEntities, numberMaxGrouped);
             FindMatchingEntities();
             SubscribePoolEvents();
         }
 
         /// <summary>
+        /// Checks the presence of the entity.
+        /// </summary>
+        public bool Have(int entity)
+            => _entitySet.Have(entity);
+
+        /// <summary>
         /// Returns all the entities with the matching set of components.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
-        {
-            return _entitySet.GetEntities();
-        }
+            => _entitySet.GetEntities();
 
         /// <summary>
         /// Returns an index of the entity in the entity span returned by <see cref="GetEntities"/>.
+        /// Doesn't check the presence of the entity.
         /// </summary>
         public int GetEntityIndex(int entity)
-        {
-            return _entitySet.Get(entity);
-        }
+            => _entitySet.Get(entity);
 
         /// <summary>
         /// Checks the matching set of components with this group's set of components.
         /// </summary>
         public bool Match(TypeSet typeSet)
-        {
-            return _typeSet.Match(typeSet);
-        }
+            => _typeSet.Match(typeSet);
 
         /// <summary>
         /// Disposes this group before deleting.
@@ -51,11 +55,16 @@
         public void Dispose()
         {
             UnsubscribePoolEvents();
+            _typeSet = null;
+            _poolSet = null;
+            _entitySet = null;
+            Disposed?.Invoke(this);
         }
 
         private void FindMatchingEntities()
         {
-            foreach (var entity in _poolSet.GetIncluded()[0].GetEntities())
+            var firstIncludedPoolEntitiesAsSpan = _poolSet.GetIncluded()[0].GetEntities();
+            foreach (var entity in firstIncludedPoolEntitiesAsSpan)
                 AttemptIncludeEntity(entity);
         }
 

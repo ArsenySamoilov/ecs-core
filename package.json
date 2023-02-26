@@ -1,6 +1,6 @@
 {
   "name": "com.arsenysamoilov.ecs-core",
-  "version": "0.7.5",
+  "version": "0.7.7",
   "displayName": "Semsam ECS Core",
   "description": "Entity-Component-System Core",
   "unity": "2021.3",

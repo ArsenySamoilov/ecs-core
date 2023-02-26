@@ -6,88 +6,72 @@
     public sealed class Worlds : IWorlds, System.IDisposable
     {
         private readonly WorldConfig? _worldConfig;
-        private readonly World[] _worlds;
-        private int _worldCount;
+        private OneItemSet<World> _worldSet;
+        private int _nextWorldId;
 
-        public event System.Action<BoxedWorld> Created;
-        public event System.Action<BoxedWorld> Removed;
+        public event System.Action<IWorld> Created;
+        public event System.Action<IWorld> Removed;
 
         public Worlds(in WorldsConfig? config = null)
         {
+            var numberMaxWorlds = config?.NumberMaxWorlds ?? WorldsConfig.Options.NumberMaxWorldsDefault;
             _worldConfig = config?.WorldConfig;
-            _worlds = new World[config?.NumberMaxWorlds ?? WorldsConfig.Options.NumberMaxWorldsDefault];
+            _worldSet = new OneItemSet<World>(numberMaxWorlds, numberMaxWorlds);
+            _nextWorldId = 0;
         }
 
         /// <summary>
-        /// Creates a world and boxes it.
+        /// Creates a world.
         /// </summary>
-        public BoxedWorld Create(in WorldConfig? worldConfig = null)
+        public IWorld Create(in WorldConfig? worldConfig = null)
         {
-            var world = new World(worldConfig ?? _worldConfig);
-            var boxedWorld = new BoxedWorld(world, _worldCount);
-            _worlds[_worldCount++] = world;
-            Created?.Invoke(boxedWorld);
-            return boxedWorld;
+            var world = new World(_nextWorldId, worldConfig ?? _worldConfig);
+            _worldSet.Add(_nextWorldId++, world);
+            Created?.Invoke(world);
+            return world;
         }
 
         /// <summary>
         /// Removes the world.
         /// Doesn't check the presence of the world.
         /// </summary>
-        public void Remove(int index)
+        public void Remove(int worldId)
         {
-            var removedWorld = _worlds[index];
-            _worlds[index] = _worlds[--_worldCount];
+            var removedWorld = _worldSet.Get(worldId);
+            _worldSet.Delete(worldId);
             removedWorld.Dispose();
-            Removed?.Invoke(new BoxedWorld(removedWorld, index));
+            Removed?.Invoke(removedWorld);
         }
+
+        /// <summary>
+        /// Checks the presence of the world.
+        /// </summary>
+        public bool Have(int worldId)
+            => _worldSet.Have(worldId);
+
+        /// <summary>
+        /// Returns the world.
+        /// Doesn't check the presence of the world.
+        /// </summary>
+        public IWorld Get(int worldId)
+            => _worldSet.Get(worldId);
 
         /// <summary>
         /// Returns all the worlds contained.
         /// </summary>
-        public System.ReadOnlySpan<World> GetWorlds()
-        {
-            return new System.ReadOnlySpan<World>(_worlds, 0, _worldCount);
-        }
-
-        /// <summary>
-        /// Tries to box the world.
-        /// </summary>
-        /// <returns>True if the world has boxed successfully, false elsewhere.</returns>
-        public bool TryBox(IWorld world, out BoxedWorld boxedWorld)
-        {
-            var worldsAsSpan = GetWorlds();
-            for (var i = _worldCount - 1; i > -1; --i)
-                if (world == worldsAsSpan[i])
-                {
-                    boxedWorld = new BoxedWorld(world, i);
-                    return true;
-                }
-
-            boxedWorld = new BoxedWorld(null, 0);
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to unbox the boxed world.
-        /// </summary>
-        /// <returns>True if the boxed world has unboxed successfully, false elsewhere.</returns>
-        public bool TryUnbox(BoxedWorld boxedWorld, out IWorld world)
-        {
-            world = null;
-            if (_worldCount < boxedWorld.Index)
-                return false;
-            world = boxedWorld.World;
-            return _worlds[boxedWorld.Index] == boxedWorld.World;
-        }
+        public System.ReadOnlySpan<IWorld> GetWorlds()
+            => _worldSet.GetItems<IWorld>();
 
         /// <summary>
         /// Disposes all the worlds before deleting.
         /// </summary>
         public void Dispose()
         {
-            foreach (var world in GetWorlds())
+            var worldsAsSpan = _worldSet.GetItems();
+            foreach (var world in worldsAsSpan)
                 world.Dispose();
+            _worldSet = null;
+            _nextWorldId = -1;
         }
     }
 }

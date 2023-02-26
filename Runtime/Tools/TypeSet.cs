@@ -26,11 +26,9 @@
         /// </summary>
         public void Include<TComponent>() where TComponent : struct
         {
-            var includedAsSpan = new System.ReadOnlySpan<int>(_included, 0, _includedCount);
-            int i, componentId = ComponentId.For<TComponent>.Get();
-            for (i = _includedCount - 1; i > -1 && componentId < includedAsSpan[i]; --i)
-                _included[i + 1] = _included[i];
-            _included[i + 1] = componentId;
+            var includedAsSpan = new System.Span<int>(_included, 0, _includedCount + 1);
+            var componentId = ComponentId.For<TComponent>.Get();
+            Insert(includedAsSpan, _includedCount, componentId);
             ++_includedCount;
             Hash += (_includedCount + _excludedCount) * (componentId + 1);
         }
@@ -40,11 +38,9 @@
         /// </summary>
         public void Exclude<TComponent>() where TComponent : struct
         {
-            var excludedAsSpan = new System.ReadOnlySpan<int>(_excluded, 0, _excludedCount);
-            int i, componentId = ComponentId.For<TComponent>.Get();
-            for (i = _excludedCount - 1; i > -1 && componentId < excludedAsSpan[i]; --i)
-                _excluded[i + 1] = _excluded[i];
-            _excluded[i + 1] = componentId;
+            var excludedAsSpan = new System.Span<int>(_excluded, 0, _excludedCount + 1);
+            var componentId = ComponentId.For<TComponent>.Get();
+            Insert(excludedAsSpan, _excludedCount, componentId);
             ++_excludedCount;
             Hash += (_includedCount + _excludedCount) * (componentId + 1) * 100;
         }
@@ -63,6 +59,14 @@
                 if (_excluded[i] != typeSet._excluded[i])
                     return false;
             return true;
+        }
+
+        private static void Insert(System.Span<int> span, int count, int componentId)
+        {
+            int i;
+            for (i = count - 1; i > -1 && componentId < span[i]; --i)
+                span[i + 1] = span[i];
+            span[i + 1] = componentId;
         }
     }
 }

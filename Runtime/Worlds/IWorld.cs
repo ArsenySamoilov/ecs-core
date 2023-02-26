@@ -6,9 +6,13 @@
     /// </summary>
     public interface IWorld
     {
+        event System.Action<IWorld> Disposed;
+
         IEntities Entities { get; }
         IPools Pools { get; }
         IGroups Groups { get; }
         ISystems Systems { get; }
+
+        int Id { get; }
     }
 }

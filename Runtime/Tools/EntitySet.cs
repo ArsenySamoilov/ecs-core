@@ -18,7 +18,6 @@
             _denseEntities = new int[denseSize];
             _sparseIndexNull = denseSize;
             _denseEntityCount = 0;
-
             new System.Span<int>(_sparseIndices).Fill(_sparseIndexNull);
         }
 
@@ -42,7 +41,8 @@
         public (int, int) Delete(int entity)
         {
             var index = _sparseIndices[entity];
-            _sparseIndices[_denseEntities[--_denseEntityCount]] = index;
+            --_denseEntityCount;
+            _sparseIndices[_denseEntities[_denseEntityCount]] = index;
             _sparseIndices[entity] = _sparseIndexNull;
             _denseEntities[index] = _denseEntities[_denseEntityCount];
             return (index, _denseEntityCount);
@@ -52,25 +52,19 @@
         /// Checks the presence of the entity.
         /// </summary>
         public bool Have(int entity)
-        {
-            return _sparseIndices[entity] != _sparseIndexNull;
-        }
+            => _sparseIndices[entity] != _sparseIndexNull;
 
         /// <summary>
         /// Returns dense array's index of the entity.
         /// Doesn't check the presence of the entity.
         /// </summary>
         public int Get(int entity)
-        {
-            return _sparseIndices[entity];
-        }
+            => _sparseIndices[entity];
 
         /// <summary>
         /// Returns all the entities contained.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
-        {
-            return new System.ReadOnlySpan<int>(_denseEntities, 0, _denseEntityCount);
-        }
+            => new(_denseEntities, 0, _denseEntityCount);
     }
 }

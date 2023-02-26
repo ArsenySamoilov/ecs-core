@@ -5,32 +5,34 @@
     /// </summary>
     public interface IWorlds
     {
+        event System.Action<IWorld> Created;
+        event System.Action<IWorld> Removed;
+
         /// <summary>
-        /// Creates a world and boxes it.
+        /// Creates a world.
         /// </summary>
-        BoxedWorld Create(in WorldConfig? worldConfig = null);
+        IWorld Create(in WorldConfig? worldConfig = null);
 
         /// <summary>
         /// Removes the world.
         /// Doesn't check the presence of the world.
         /// </summary>
-        void Remove(int index);
+        void Remove(int worldId);
 
         /// <summary>
-        /// Tries to box the world.
+        /// Checks the presence of the world.
         /// </summary>
-        /// <returns>True if the world has boxed successfully, false elsewhere.</returns>
-        bool TryBox(IWorld world, out BoxedWorld boxedWorld);
+        bool Have(int worldId);
 
         /// <summary>
-        /// Tries to unbox the boxed world.
+        /// Returns the world.
+        /// Doesn't check the presence of the world.
         /// </summary>
-        /// <returns>True if the boxed world has unboxed successfully, false elsewhere.</returns>
-        bool TryUnbox(BoxedWorld boxedWorld, out IWorld world);
+        IWorld Get(int worldId);
 
         /// <summary>
-        /// Disposes all the worlds before deleting.
+        /// Returns all the worlds contained.
         /// </summary>
-        void Dispose();
+        System.ReadOnlySpan<IWorld> GetWorlds();
     }
 }

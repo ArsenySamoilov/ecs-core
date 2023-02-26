@@ -1,10 +1,15 @@
 ﻿namespace SemsamECS.Core
 {
     /// <summary>
-    /// An interface of the entity container.
+    /// An interface of an entity container.
     /// </summary>
     public interface IEntities
     {
+        event System.Action<int> Created;
+        event System.Action<int> Removed;
+
+        event System.Action<IEntities> Disposed;
+
         /// <summary>
         /// Creates an entity.
         /// </summary>
@@ -17,16 +22,13 @@
         void Remove(int entity);
 
         /// <summary>
-        /// Boxes the entity.
-        /// Doesn't check the presence of the entity.
+        /// Checks the presence of the entity.
         /// </summary>
-        BoxedEntity Box(int entity);
+        bool Have(int entity);
 
         /// <summary>
-        /// Tries to unbox the boxed entity.
-        /// In case of successful unboxing, entity will be assigned to the 'out' parameter.
+        /// Returns all the existing entities.
         /// </summary>
-        /// <returns>True if boxed entity has unboxed successfully, false elsewhere.</returns>
-        bool TryUnbox(BoxedEntity boxedEntity, out int entity);
+        System.ReadOnlySpan<int> GetEntities();
     }
 }

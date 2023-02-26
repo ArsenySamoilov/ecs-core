@@ -5,38 +5,37 @@
     /// </summary>
     public sealed class PoolSet
     {
-        private readonly Pools _poolContainer;
-        private readonly INotGenericPool[] _included;
-        private readonly INotGenericPool[] _excluded;
+        private readonly IPool[] _included;
+        private readonly IPool[] _excluded;
         private int _includedCount;
         private int _excludedCount;
+        
+        public Pools PoolContainer { get; }
 
         public PoolSet(Pools poolContainer, in GroupConfig? groupConfig = null)
         {
-            _poolContainer = poolContainer;
-            _included = new INotGenericPool[groupConfig?.NumberMaxIncluded ?? GroupConfig.Options.NumberMaxIncludedDefault];
-            _excluded = new INotGenericPool[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
+            PoolContainer = poolContainer;
+            _included = new IPool[groupConfig?.NumberMaxIncluded ?? GroupConfig.Options.NumberMaxIncludedDefault];
+            _excluded = new IPool[groupConfig?.NumberMaxExcluded ?? GroupConfig.Options.NumberMaxExcludedDefault];
             _includedCount = 0;
             _excludedCount = 0;
         }
 
         /// <summary>
         /// Includes the pool.
+        /// Doesn't check the presence of the pool.
         /// </summary>
         /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
         public void Include<TComponent>() where TComponent : struct
-        {
-            _included[_includedCount++] = (INotGenericPool)_poolContainer.Get<TComponent>();
-        }
+            => _included[_includedCount++] = (IPool)PoolContainer.Get<TComponent>();
 
         /// <summary>
         /// Excludes the pool.
+        /// Doesn't check the presence of the pool.
         /// </summary>
         /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
         public void Exclude<TComponent>() where TComponent : struct
-        {
-            _excluded[_excludedCount++] = (INotGenericPool)_poolContainer.Get<TComponent>();
-        }
+            => _excluded[_excludedCount++] = (IPool)PoolContainer.Get<TComponent>();
 
         /// <summary>
         /// Checks matching of the entity.
@@ -55,17 +54,13 @@
         /// <summary>
         /// Returns all the included pools contained.
         /// </summary>
-        public System.ReadOnlySpan<INotGenericPool> GetIncluded()
-        {
-            return new System.ReadOnlySpan<INotGenericPool>(_included, 0, _includedCount);
-        }
+        public System.ReadOnlySpan<IPool> GetIncluded()
+            => new(_included, 0, _includedCount);
 
         /// <summary>
         /// Returns all the excluded pools contained.
         /// </summary>
-        public System.ReadOnlySpan<INotGenericPool> GetExcluded()
-        {
-            return new System.ReadOnlySpan<INotGenericPool>(_excluded, 0, _excludedCount);
-        }
+        public System.ReadOnlySpan<IPool> GetExcluded()
+            => new(_excluded, 0, _excludedCount);
     }
 }

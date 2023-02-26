@@ -5,20 +5,20 @@
     /// </summary>
     public sealed class Pools : IPools, System.IDisposable
     {
-        private readonly Entities _entityContainer;
         private readonly EntitiesConfig? _entitiesConfig;
         private readonly PoolConfig? _poolConfig;
-        private readonly EntitySet _entitySet;
-        private readonly INotGenericPool[] _densePools;
+        private Entities _entityContainer;
+        private OneItemSet<Pool> _poolSet;
+
+        public event System.Action<IPools> Disposed;
 
         public Pools(Entities entityContainer, in EntitiesConfig? entitiesConfig = null, in PoolsConfig? poolsConfig = null)
         {
             var numberMaxPools = poolsConfig?.NumberMaxPools ?? PoolsConfig.Options.NumberMaxPoolsDefault;
-            _entityContainer = entityContainer;
             _entitiesConfig = entitiesConfig;
             _poolConfig = poolsConfig?.PoolConfig;
-            _entitySet = new EntitySet(numberMaxPools, numberMaxPools);
-            _densePools = new INotGenericPool[numberMaxPools];
+            _entityContainer = entityContainer;
+            _poolSet = new OneItemSet<Pool>(numberMaxPools, numberMaxPools);
         }
 
         /// <summary>
@@ -29,11 +29,11 @@
         public IPool<TComponent> Create<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
         {
             var isTag = typeof(ITag).IsAssignableFrom(typeof(TComponent));
-            INotGenericPool pool = isTag
+            Pool pool = isTag
                 ? new TagPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig)
                 : new ComponentPool<TComponent>(_entityContainer, _entitiesConfig, poolConfig ?? _poolConfig);
-            _densePools[_entitySet.Add(ComponentId.For<TComponent>.Get())] = pool;
-            return (IPool<TComponent>)pool;
+            var componentId = ComponentId.For<TComponent>.Get();
+            return (IPool<TComponent>)_poolSet.Add(componentId, pool);
         }
 
         /// <summary>
@@ -42,49 +42,39 @@
         /// </summary>
         /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
         public void Remove<TComponent>() where TComponent : struct
-        {
-            var (destinationIndex, sourceIndex) = _entitySet.Delete(ComponentId.For<TComponent>.Get());
-            _densePools[destinationIndex].Dispose();
-            _densePools[destinationIndex] = _densePools[sourceIndex];
-        }
+            => _poolSet.Delete(ComponentId.For<TComponent>.Get());
 
         /// <summary>
         /// Checks the presence of the pool.
         /// </summary>
         /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
         public bool Have<TComponent>() where TComponent : struct
-        {
-            return _entitySet.Have(ComponentId.For<TComponent>.Get());
-        }
+            => _poolSet.Have(ComponentId.For<TComponent>.Get());
 
         /// <summary>
         /// Returns the pool.
-        /// Checks the presence of the pool.
+        /// Doesn't check the presence of the pool.
         /// </summary>
         /// <typeparam name="TComponent">The type of components contained in the pool.</typeparam>
-        public IPool<TComponent> Get<TComponent>(in PoolConfig? poolConfig = null) where TComponent : struct
-        {
-            var componentId = ComponentId.For<TComponent>.Get();
-            if (_entitySet.Have(componentId))
-                return (IPool<TComponent>)_densePools[_entitySet.Get(componentId)];
-            return Create<TComponent>(poolConfig ?? _poolConfig);
-        }
+        public IPool<TComponent> Get<TComponent>() where TComponent : struct
+            => (IPool<TComponent>)_poolSet.Get(ComponentId.For<TComponent>.Get());
 
         /// <summary>
         /// Returns all the pools contained.
         /// </summary>
-        public System.ReadOnlySpan<INotGenericPool> GetPools()
-        {
-            return new System.ReadOnlySpan<INotGenericPool>(_densePools, 0, _entitySet.Length);
-        }
+        public System.ReadOnlySpan<IPool> GetPools()
+            => _poolSet.GetItems<IPool>();
 
         /// <summary>
         /// Disposes all the pools before deleting.
         /// </summary>
         public void Dispose()
         {
-            foreach (var pool in GetPools())
+            foreach (var pool in _poolSet.GetItems())
                 pool.Dispose();
+            _entityContainer = null;
+            _poolSet = null;
+            Disposed?.Invoke(this);
         }
     }
 }

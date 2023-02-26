@@ -8,9 +8,7 @@
         private static int _id = 0;
 
         private static int GetNext()
-        {
-            return _id++;
-        }
+            => _id++;
 
         /// <summary>
         /// A component identifier provider.

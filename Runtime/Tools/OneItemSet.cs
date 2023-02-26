@@ -42,33 +42,32 @@
         /// Checks the presence of the entity.
         /// </summary>
         public bool Have(int entity)
-        {
-            return _entitySet.Have(entity);
-        }
+            => _entitySet.Have(entity);
 
         /// <summary>
         /// Returns reference to the item of the entity.
         /// Doesn't check the presence of the entity.
         /// </summary>
         public ref TItem Get(int entity)
-        {
-            return ref _denseItems[_entitySet.Get(entity)];
-        }
+            => ref _denseItems[_entitySet.Get(entity)];
 
         /// <summary>
         /// Returns all the entities contained.
         /// </summary>
         public System.ReadOnlySpan<int> GetEntities()
-        {
-            return _entitySet.GetEntities();
-        }
+            => _entitySet.GetEntities();
 
         /// <summary>
         /// Returns all the items contained.
         /// </summary>
         public System.ReadOnlySpan<TItem> GetItems()
-        {
-            return new System.ReadOnlySpan<TItem>(_denseItems, 0, Length);
-        }
+            => new(_denseItems, 0, Length);
+
+        /// <summary>
+        /// Returns all the items contained.
+        /// </summary>
+        /// <typeparam name="TSpecifiedItem">The type for casting items contained.</typeparam>
+        public System.ReadOnlySpan<TSpecifiedItem> GetItems<TSpecifiedItem>()
+            => new((TSpecifiedItem[])(object)_denseItems, 0, Length);
     }
 }

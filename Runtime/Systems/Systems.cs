@@ -5,13 +5,15 @@
     /// </summary>
     public sealed class Systems : ISystems, System.IDisposable
     {
-        private readonly IWorld _world;
+        private IWorld _world;
 
-        private readonly OneItemSet<ISystem> _systemsSet;
-        private readonly OneItemSet<IInitializeSystem> _initializeSystemsSet;
-        private readonly OneItemSet<IStartUpSystem> _startUpSystemsSet;
-        private readonly OneItemSet<IExecuteSystem> _executeSystemsSet;
-        private readonly OneItemSet<System.IDisposable> _disposeSystemsSet;
+        private OneItemSet<ISystem> _systemsSet;
+        private OneItemSet<IInitializeSystem> _initializeSystemsSet;
+        private OneItemSet<IStartUpSystem> _startUpSystemsSet;
+        private OneItemSet<IExecuteSystem> _executeSystemsSet;
+        private OneItemSet<System.IDisposable> _disposeSystemsSet;
+
+        public event System.Action<ISystems> Disposed;
 
         public Systems(IWorld world, in SystemsConfig? config = null)
         {
@@ -67,9 +69,8 @@
         /// Returns all the systems contained.
         /// </summary>
         public System.ReadOnlySpan<ISystem> GetSystems()
-        {
-            return _systemsSet.GetItems();
-        }
+            => _systemsSet.GetItems();
+
 
         /// <summary>
         /// Initializes all the systems.
@@ -105,6 +106,13 @@
         {
             foreach (var system in _disposeSystemsSet.GetItems())
                 system.Dispose();
+            _world = null;
+            _systemsSet = null;
+            _initializeSystemsSet = null;
+            _startUpSystemsSet = null;
+            _executeSystemsSet = null;
+            _disposeSystemsSet = null;
+            Disposed?.Invoke(this);
         }
     }
 }
